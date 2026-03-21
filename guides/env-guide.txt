@@ -1,0 +1,20 @@
+ENVIRONMENT GUIDE
+
+Local environment file:
+.env
+
+Required variables:
+DB_URL=jdbc:mysql://localhost:3306/pawtner-db
+DB_USERNAME=root
+DB_PASSWORD=Test1234!
+API_BEARER_TOKEN=your-token-here
+BREVO_API_KEY=your-brevo-api-key
+BREVO_SENDER_EMAIL=verified-sender@example.com
+BREVO_SENDER_NAME=Pawtner Care
+BREVO_SANDBOX_MODE=true
+OTP_EXPIRY_MINUTES=5
+
+Notes:
+- Use BREVO_SANDBOX_MODE=false for real email sending
+- Keep .env out of git
+- Railway can use the same variable names in deployment settings

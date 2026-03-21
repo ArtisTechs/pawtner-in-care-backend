@@ -1,0 +1,82 @@
+USER ENDPOINTS
+
+Base URL:
+http://localhost:8080/api/users
+
+Authorization:
+Bearer Token required
+
+Header:
+Authorization: Bearer your-token-here
+
+1. Create User
+POST /
+Content-Type: application/json
+
+Sample body:
+{
+  "firstName": "Admin",
+  "middleName": "System",
+  "lastName": "User",
+  "email": "admin@example.com",
+  "password": "Admin1234!",
+  "role": "ADMIN"
+}
+
+Notes:
+- If role is omitted, default is USER
+- ID is auto-generated as UUID
+
+2. Get User List
+GET /
+
+Available query params:
+- search
+- firstName
+- middleName
+- lastName
+- email
+- page
+- size
+- sortBy
+- sortDir
+
+Sample:
+GET /?search=jane&page=0&size=10&sortBy=lastName&sortDir=asc
+
+Allowed sortBy values:
+- id
+- firstName
+- middleName
+- lastName
+- email
+
+Allowed sortDir values:
+- asc
+- desc
+
+3. Get One User
+GET /{id}
+
+Sample:
+GET /550e8400-e29b-41d4-a716-446655440000
+
+4. Update User
+PUT /{id}
+Content-Type: application/json
+
+Sample body:
+{
+  "firstName": "Jane",
+  "middleName": "Anne",
+  "lastName": "Doe",
+  "email": "jane.doe@example.com",
+  "password": "NewPass123!",
+  "role": "USER"
+}
+
+5. Delete User
+DELETE /{id}
+
+Sample:
+DELETE /550e8400-e29b-41d4-a716-446655440000

@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import pawtner_core.pawtner_care_api.dto.PageResponse;
 import pawtner_core.pawtner_care_api.dto.PaymentModeRequest;
 import pawtner_core.pawtner_care_api.dto.PaymentModeResponse;
 import pawtner_core.pawtner_care_api.service.PaymentModeService;
@@ -31,8 +33,16 @@ public class PaymentModeController {
     }
 
     @GetMapping
-    public List<PaymentModeResponse> getPaymentModes() {
-        return paymentModeService.getPaymentModes();
+    public PageResponse<PaymentModeResponse> getPaymentModes(
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) String name,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "id") String sortBy,
+        @RequestParam(defaultValue = "asc") String sortDir,
+        @RequestParam(defaultValue = "true") boolean ignorePagination
+    ) {
+        return paymentModeService.getPaymentModes(search, name, page, size, sortBy, sortDir, ignorePagination);
     }
 
     @GetMapping("/{id}")

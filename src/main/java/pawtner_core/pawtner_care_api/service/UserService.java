@@ -15,7 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import pawtner_core.pawtner_care_api.dto.UserPageResponse;
+import pawtner_core.pawtner_care_api.dto.PageResponse;
 import pawtner_core.pawtner_care_api.dto.UserRequest;
 import pawtner_core.pawtner_care_api.dto.UserResponse;
 import pawtner_core.pawtner_care_api.entity.User;
@@ -37,7 +37,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserPageResponse getUsers(
+    public PageResponse<UserResponse> getUsers(
         String search,
         String firstName,
         String middleName,
@@ -46,34 +46,28 @@ public class UserService {
         int page,
         int size,
         String sortBy,
-        String sortDir
+        String sortDir,
+        boolean ignorePagination
     ) {
         int safePage = Math.max(page, 0);
         int safeSize = Math.min(Math.max(size, 1), 100);
         String normalizedSortBy = normalizeSortBy(sortBy);
         Sort.Direction direction = normalizeSortDirection(sortDir);
-        Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by(direction, normalizedSortBy));
+        Sort sort = Sort.by(direction, normalizedSortBy);
+        Specification<User> specification = buildUserSpecification(search, firstName, middleName, lastName, email);
 
-        Page<User> users = userRepository.findAll(
-            buildUserSpecification(search, firstName, middleName, lastName, email),
-            pageable
-        );
+        if (ignorePagination) {
+            List<UserResponse> content = userRepository.findAll(specification, sort).stream()
+                .map(this::toResponse)
+                .toList();
+            return PageResponse.fromList(content, normalizedSortBy, direction.name().toLowerCase(), true);
+        }
 
-        List<UserResponse> content = users.getContent().stream()
-            .map(this::toResponse)
-            .toList();
+        Pageable pageable = PageRequest.of(safePage, safeSize, sort);
+        Page<User> users = userRepository.findAll(specification, pageable);
+        Page<UserResponse> responsePage = users.map(this::toResponse);
 
-        return new UserPageResponse(
-            content,
-            users.getNumber(),
-            users.getSize(),
-            users.getTotalElements(),
-            users.getTotalPages(),
-            normalizedSortBy,
-            direction.name().toLowerCase(),
-            users.isFirst(),
-            users.isLast()
-        );
+        return PageResponse.fromPage(responsePage, normalizedSortBy, direction.name().toLowerCase(), false);
     }
 
     @Transactional(readOnly = true)

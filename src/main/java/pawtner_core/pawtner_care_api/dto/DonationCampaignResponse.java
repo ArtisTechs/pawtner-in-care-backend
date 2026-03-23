@@ -13,6 +13,7 @@ public record DonationCampaignResponse(
     String title,
     String description,
     BigDecimal totalCost,
+    BigDecimal totalDonatedCost,
     LocalDate deadline,
     LocalDate startDate,
     LocalDateTime updatedDate,

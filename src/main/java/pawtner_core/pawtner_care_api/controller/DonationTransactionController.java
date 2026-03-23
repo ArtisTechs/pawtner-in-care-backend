@@ -1,6 +1,7 @@
 package pawtner_core.pawtner_care_api.controller;
 
 import java.net.URI;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,8 +15,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import pawtner_core.pawtner_care_api.dto.PageResponse;
 import pawtner_core.pawtner_care_api.dto.DonationTransactionRequest;
 import pawtner_core.pawtner_care_api.dto.DonationTransactionResponse;
 import pawtner_core.pawtner_care_api.service.DonationTransactionService;
@@ -31,8 +34,40 @@ public class DonationTransactionController {
     }
 
     @GetMapping
-    public List<DonationTransactionResponse> getDonationTransactions() {
-        return donationTransactionService.getDonationTransactions();
+    public PageResponse<DonationTransactionResponse> getDonationTransactions(
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) UUID userId,
+        @RequestParam(required = false) UUID paymentModeId,
+        @RequestParam(required = false) UUID donationCampaignId,
+        @RequestParam(required = false) String userName,
+        @RequestParam(required = false) String userEmail,
+        @RequestParam(required = false) String paymentModeName,
+        @RequestParam(required = false) String donationCampaignTitle,
+        @RequestParam(required = false) BigDecimal minDonatedAmount,
+        @RequestParam(required = false) BigDecimal maxDonatedAmount,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "id") String sortBy,
+        @RequestParam(defaultValue = "asc") String sortDir,
+        @RequestParam(defaultValue = "true") boolean ignorePagination
+    ) {
+        return donationTransactionService.getDonationTransactions(
+            search,
+            userId,
+            paymentModeId,
+            donationCampaignId,
+            userName,
+            userEmail,
+            paymentModeName,
+            donationCampaignTitle,
+            minDonatedAmount,
+            maxDonatedAmount,
+            page,
+            size,
+            sortBy,
+            sortDir,
+            ignorePagination
+        );
     }
 
     @GetMapping("/{id}")

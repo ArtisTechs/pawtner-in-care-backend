@@ -1,11 +1,20 @@
 package pawtner_core.pawtner_care_api.service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
+import jakarta.persistence.criteria.Predicate;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import pawtner_core.pawtner_care_api.dto.PageResponse;
 import pawtner_core.pawtner_care_api.dto.PaymentModeRequest;
 import pawtner_core.pawtner_care_api.dto.PaymentModeResponse;
 import pawtner_core.pawtner_care_api.entity.PaymentMode;
@@ -15,6 +24,8 @@ import pawtner_core.pawtner_care_api.repository.PaymentModeRepository;
 @Service
 public class PaymentModeService {
 
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("id", "name", "createdDate");
+
     private final PaymentModeRepository paymentModeRepository;
 
     public PaymentModeService(PaymentModeRepository paymentModeRepository) {
@@ -22,10 +33,32 @@ public class PaymentModeService {
     }
 
     @Transactional(readOnly = true)
-    public List<PaymentModeResponse> getPaymentModes() {
-        return paymentModeRepository.findAll().stream()
-            .map(this::toResponse)
-            .toList();
+    public PageResponse<PaymentModeResponse> getPaymentModes(
+        String search,
+        String name,
+        int page,
+        int size,
+        String sortBy,
+        String sortDir,
+        boolean ignorePagination
+    ) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), 100);
+        String normalizedSortBy = normalizeSortBy(sortBy);
+        Sort.Direction direction = normalizeSortDirection(sortDir);
+        Sort sort = Sort.by(direction, normalizedSortBy);
+        Specification<PaymentMode> specification = buildPaymentModeSpecification(search, name);
+
+        if (ignorePagination) {
+            List<PaymentModeResponse> content = paymentModeRepository.findAll(specification, sort).stream()
+                .map(this::toResponse)
+                .toList();
+            return PageResponse.fromList(content, normalizedSortBy, direction.name().toLowerCase(), true);
+        }
+
+        Pageable pageable = PageRequest.of(safePage, safeSize, sort);
+        Page<PaymentModeResponse> responsePage = paymentModeRepository.findAll(specification, pageable).map(this::toResponse);
+        return PageResponse.fromPage(responsePage, normalizedSortBy, direction.name().toLowerCase(), false);
     }
 
     @Transactional(readOnly = true)
@@ -60,6 +93,22 @@ public class PaymentModeService {
             .orElseThrow(() -> new ResourceNotFoundException("Payment mode with id " + id + " was not found"));
     }
 
+    private Specification<PaymentMode> buildPaymentModeSpecification(String search, String name) {
+        return (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new java.util.ArrayList<>();
+
+            addLikePredicate(predicates, criteriaBuilder, root.get("name"), name);
+
+            String normalizedSearch = normalizeFilter(search);
+            if (normalizedSearch != null) {
+                String pattern = "%" + normalizedSearch.toLowerCase() + "%";
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), pattern));
+            }
+
+            return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
+        };
+    }
+
     private void applyRequest(PaymentMode paymentMode, PaymentModeRequest request) {
         paymentMode.setName(request.name().trim());
         paymentMode.setPhotoQr(normalizeOptionalText(request.photoQr()));
@@ -72,6 +121,53 @@ public class PaymentModeService {
 
         String trimmedValue = value.trim();
         return trimmedValue.isEmpty() ? null : trimmedValue;
+    }
+
+    private void addLikePredicate(
+        List<Predicate> predicates,
+        jakarta.persistence.criteria.CriteriaBuilder criteriaBuilder,
+        jakarta.persistence.criteria.Path<String> path,
+        String value
+    ) {
+        String normalizedValue = normalizeFilter(value);
+        if (normalizedValue != null) {
+            predicates.add(criteriaBuilder.like(criteriaBuilder.lower(path), "%" + normalizedValue.toLowerCase() + "%"));
+        }
+    }
+
+    private String normalizeFilter(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String trimmedValue = value.trim();
+        return trimmedValue.isEmpty() ? null : trimmedValue;
+    }
+
+    private String normalizeSortBy(String sortBy) {
+        String requestedSortBy = normalizeFilter(sortBy);
+        if (requestedSortBy == null) {
+            return "id";
+        }
+
+        if (!ALLOWED_SORT_FIELDS.contains(requestedSortBy)) {
+            throw new IllegalArgumentException("Invalid sortBy value: " + requestedSortBy);
+        }
+
+        return requestedSortBy;
+    }
+
+    private Sort.Direction normalizeSortDirection(String sortDir) {
+        String requestedSortDirection = normalizeFilter(sortDir);
+        if (requestedSortDirection == null) {
+            return Sort.Direction.ASC;
+        }
+
+        try {
+            return Sort.Direction.fromString(requestedSortDirection);
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalArgumentException("Invalid sortDir value: " + requestedSortDirection);
+        }
     }
 
     private PaymentModeResponse toResponse(PaymentMode paymentMode) {

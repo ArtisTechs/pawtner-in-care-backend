@@ -1,0 +1,94 @@
+VETERINARY CLINIC ENDPOINTS
+
+Base URL:
+http://localhost:8080/api/veterinary-clinics
+
+Authorization:
+Bearer Token required
+
+Header:
+Authorization: Bearer your-token-here
+
+1. Create Veterinary Clinic
+POST /
+Content-Type: application/json
+
+Sample body:
+{
+  "name": "PawCare Veterinary Clinic",
+  "description": "Full-service veterinary clinic for consultations, vaccination, and minor procedures.",
+  "locationAddress": "123 Paw Street, Quezon City",
+  "long": 121.0437000,
+  "latitude": 14.6760000,
+  "openingTime": "08:30",
+  "contactNumbers": [
+    "+639171234567",
+    "+63281234567"
+  ],
+  "ratings": "4.8/5",
+  "photos": [
+    "https://example.com/photos/clinic-front.jpg",
+    "https://example.com/photos/clinic-lobby.jpg"
+  ],
+  "logo": "https://example.com/logos/pawcare.png",
+  "videos": [
+    "https://example.com/videos/clinic-tour.mp4"
+  ]
+}
+
+Notes:
+- ID is auto-generated as UUID
+- createdDate is auto-generated on create
+- updatedDate is auto-generated on create and update
+- Required fields: name, locationAddress, long, latitude
+- openingTime is optional and uses HH:mm format
+- contactNumbers, photos, and videos accept multiple string values
+
+2. Get Veterinary Clinic List
+GET /
+
+3. Get Veterinary Clinic List With Filters
+GET /?search=paw&name=clinic&locationAddress=quezon&ratings=4.8
+
+Notes:
+- search checks name, description, locationAddress, and ratings
+- Supports pagination params: page, size, sortBy, sortDir, ignorePagination
+- Default sortBy is name
+
+4. Get One Veterinary Clinic
+GET /{id}
+
+Sample:
+GET /550e8400-e29b-41d4-a716-446655440000
+
+5. Update Veterinary Clinic
+PUT /{id}
+Content-Type: application/json
+
+Sample body:
+{
+  "name": "PawCare Veterinary Clinic Main Branch",
+  "description": "Updated clinic details with expanded services and operating hours.",
+  "locationAddress": "123 Paw Street, Quezon City",
+  "long": 121.0437000,
+  "latitude": 14.6760000,
+  "openingTime": "09:00",
+  "contactNumbers": [
+    "+639171234567",
+    "+63281234567"
+  ],
+  "ratings": "4.9/5",
+  "photos": [
+    "https://example.com/photos/clinic-front-new.jpg"
+  ],
+  "logo": "https://example.com/logos/pawcare-new.png",
+  "videos": [
+    "https://example.com/videos/clinic-tour-updated.mp4"
+  ]
+}
+
+6. Delete Veterinary Clinic
+DELETE /{id}
+
+Sample:
+DELETE /550e8400-e29b-41d4-a716-446655440000

@@ -1,11 +1,13 @@
 package pawtner_core.pawtner_care_api.controller;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
 import jakarta.validation.Valid;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,10 +16,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import pawtner_core.pawtner_care_api.dto.PageResponse;
 import pawtner_core.pawtner_care_api.dto.PetRequest;
 import pawtner_core.pawtner_care_api.dto.PetResponse;
+import pawtner_core.pawtner_care_api.enums.PetStatus;
 import pawtner_core.pawtner_care_api.service.PetService;
 
 @RestController
@@ -31,8 +36,40 @@ public class PetController {
     }
 
     @GetMapping
-    public List<PetResponse> getPets() {
-        return petService.getPets();
+    public PageResponse<PetResponse> getPets(
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) String name,
+        @RequestParam(required = false) String gender,
+        @RequestParam(required = false) String type,
+        @RequestParam(required = false) PetStatus status,
+        @RequestParam(required = false) Boolean isVaccinated,
+        @RequestParam(required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate birthDateFrom,
+        @RequestParam(required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate birthDateTo,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "id") String sortBy,
+        @RequestParam(defaultValue = "asc") String sortDir,
+        @RequestParam(defaultValue = "true") boolean ignorePagination
+    ) {
+        return petService.getPets(
+            search,
+            name,
+            gender,
+            type,
+            status,
+            isVaccinated,
+            birthDateFrom,
+            birthDateTo,
+            page,
+            size,
+            sortBy,
+            sortDir,
+            ignorePagination
+        );
     }
 
     @GetMapping("/{id}")

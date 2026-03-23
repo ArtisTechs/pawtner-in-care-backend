@@ -29,6 +29,7 @@ Sample body:
 Notes:
 - ID is auto-generated as UUID
 - updatedDate is auto-generated on create and update
+- totalDonatedCost is auto-computed from linked donation transactions
 - Required fields: title, totalCost, status, type
 - Deadline cannot be earlier than startDate
 - Allowed status values:

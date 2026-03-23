@@ -1,0 +1,100 @@
+EMERGENCY SOS ENDPOINTS
+
+Base URL:
+http://localhost:8080/api/emergency-sos
+
+Authorization:
+Bearer Token required
+
+Header:
+Authorization: Bearer your-token-here
+
+1. Create Emergency SOS
+POST /
+Content-Type: application/json
+
+Sample body:
+{
+  "personFilledId": "550e8400-e29b-41d4-a716-446655440010",
+  "type": "INJURED",
+  "addressLocation": "Near Aurora Boulevard, Quezon City",
+  "latitude": 14.6234000,
+  "long": 121.0605000,
+  "additionalLocationMessage": "Beside the pedestrian overpass near the red gate.",
+  "description": "A dog appears to have an injured front leg and cannot stand properly.",
+  "status": "REQUESTED"
+}
+
+Notes:
+- ID is auto-generated as UUID
+- personFilledId must reference an existing user
+- createdAt is auto-generated on create
+- updatedAt is auto-generated on create and update
+- Required fields: personFilledId, type, addressLocation, latitude, long, status
+- Allowed type values:
+  INJURED
+  ACCIDENTS
+  RANDOM_STRAY
+- Allowed status values:
+  REQUESTED
+  ONGOING_RESCUE
+  RESCUED
+
+2. Get Emergency SOS List
+GET /
+
+3. Get Emergency SOS List With Filters
+GET /?search=dog&type=INJURED&status=REQUESTED&personFilledEmail=user@example.com
+
+Notes:
+- search checks person filled name, person filled email, addressLocation, additionalLocationMessage, and description
+- Supports pagination params: page, size, sortBy, sortDir, ignorePagination
+- Default sort is createdAt desc
+
+4. Get Emergency SOS Types Reference
+GET /types
+
+Sample response:
+[
+  "INJURED",
+  "ACCIDENTS",
+  "RANDOM_STRAY"
+]
+
+5. Get Emergency SOS Statuses Reference
+GET /statuses
+
+Sample response:
+[
+  "REQUESTED",
+  "ONGOING_RESCUE",
+  "RESCUED"
+]
+
+6. Get One Emergency SOS
+GET /{id}
+
+Sample:
+GET /550e8400-e29b-41d4-a716-446655440000
+
+7. Update Emergency SOS
+PUT /{id}
+Content-Type: application/json
+
+Sample body:
+{
+  "personFilledId": "550e8400-e29b-41d4-a716-446655440010",
+  "type": "ACCIDENTS",
+  "addressLocation": "Near Aurora Boulevard, Quezon City",
+  "latitude": 14.6234000,
+  "long": 121.0605000,
+  "additionalLocationMessage": "Updated landmark near the rescue pickup point.",
+  "description": "Rescue team is coordinating pickup for the injured stray.",
+  "status": "ONGOING_RESCUE"
+}
+
+8. Delete Emergency SOS
+DELETE /{id}
+
+Sample:
+DELETE /550e8400-e29b-41d4-a716-446655440000

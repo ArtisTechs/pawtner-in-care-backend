@@ -1,0 +1,69 @@
+EVENT ENDPOINTS
+
+Base URL:
+http://localhost:8080/api/events
+
+Authorization:
+Bearer Token required
+
+Header:
+Authorization: Bearer your-token-here
+
+1. Create Event
+POST /
+Content-Type: application/json
+
+Sample body:
+{
+  "title": "Paw Adoption Fair 2026",
+  "description": "Join us for a community adoption fair with free pet care tips and activities.",
+  "startDate": "2026-04-15",
+  "endDate": "2026-04-15",
+  "time": "09:00",
+  "link": "https://example.com/events/paw-adoption-fair",
+  "photo": "https://example.com/photos/adoption-fair.jpg"
+}
+
+Notes:
+- ID is auto-generated as UUID
+- createdDate is auto-generated on create
+- updatedDate is auto-generated on create and update
+- Required fields: title, startDate, endDate, time
+- End date cannot be earlier than start date
+
+2. Get Event List
+GET /
+
+3. Get Event List Filtered By Date
+GET /?date=2026-04-15
+
+Notes:
+- Returns events where the given date is within the event startDate and endDate range
+- Date format must be yyyy-MM-dd
+
+4. Get One Event
+GET /{id}
+
+Sample:
+GET /550e8400-e29b-41d4-a716-446655440000
+
+5. Update Event
+PUT /{id}
+Content-Type: application/json
+
+Sample body:
+{
+  "title": "Paw Adoption Fair 2026",
+  "description": "Updated event details with booth schedule and partner organizations.",
+  "startDate": "2026-04-15",
+  "endDate": "2026-04-16",
+  "time": "10:30",
+  "link": "https://example.com/events/paw-adoption-fair-updated",
+  "photo": "https://example.com/photos/adoption-fair-updated.jpg"
+}
+
+6. Delete Event
+DELETE /{id}
+
+Sample:
+DELETE /550e8400-e29b-41d4-a716-446655440000

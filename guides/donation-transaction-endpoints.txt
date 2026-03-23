@@ -1,0 +1,60 @@
+DONATION TRANSACTION ENDPOINTS
+
+Base URL:
+http://localhost:8080/api/donation-transactions
+
+Authorization:
+Bearer Token required
+
+Header:
+Authorization: Bearer your-token-here
+
+1. Create Donation Transaction
+POST /
+Content-Type: application/json
+
+Sample body:
+{
+  "userId": "550e8400-e29b-41d4-a716-446655440010",
+  "paymentModeId": "550e8400-e29b-41d4-a716-446655440001",
+  "donationCampaignId": "550e8400-e29b-41d4-a716-446655440002",
+  "photoProof": "https://example.com/proofs/donation-proof.png",
+  "donatedAmount": 1500.00,
+  "message": "Hope this helps."
+}
+
+Notes:
+- ID is auto-generated as UUID
+- userId must reference an existing user
+- paymentModeId must reference an existing payment mode
+- donationCampaignId must reference an existing donation campaign
+- Required fields: userId, paymentModeId, donationCampaignId, photoProof, donatedAmount
+
+2. Get Donation Transaction List
+GET /
+
+3. Get One Donation Transaction
+GET /{id}
+
+Sample:
+GET /550e8400-e29b-41d4-a716-446655440000
+
+4. Update Donation Transaction
+PUT /{id}
+Content-Type: application/json
+
+Sample body:
+{
+  "userId": "550e8400-e29b-41d4-a716-446655440010",
+  "paymentModeId": "550e8400-e29b-41d4-a716-446655440001",
+  "donationCampaignId": "550e8400-e29b-41d4-a716-446655440002",
+  "photoProof": "https://example.com/proofs/donation-proof-updated.png",
+  "donatedAmount": 2000.00,
+  "message": "Updated donation message."
+}
+
+5. Delete Donation Transaction
+DELETE /{id}
+
+Sample:
+DELETE /550e8400-e29b-41d4-a716-446655440000

@@ -16,14 +16,17 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
 public class BearerTokenAuthFilter extends OncePerRequestFilter {
 
     private static final String BEARER_PREFIX = "Bearer ";
+    private static final String PROTECTED_USERS_PATTERN = "/api/users/**";
 
     private final String expectedToken;
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     public BearerTokenAuthFilter(@Value("${API_BEARER_TOKEN}") String expectedToken) {
         this.expectedToken = expectedToken;
@@ -31,7 +34,7 @@ public class BearerTokenAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !request.getRequestURI().startsWith("/api/users");
+        return !pathMatcher.match(PROTECTED_USERS_PATTERN, request.getRequestURI());
     }
 
     @Override

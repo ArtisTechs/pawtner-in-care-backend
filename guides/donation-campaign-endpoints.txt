@@ -1,0 +1,91 @@
+DONATION CAMPAIGN ENDPOINTS
+
+Base URL:
+http://localhost:8080/api/donation-campaigns
+
+Authorization:
+Bearer Token required
+
+Header:
+Authorization: Bearer your-token-here
+
+1. Create Donation Campaign
+POST /
+Content-Type: application/json
+
+Sample body:
+{
+  "title": "Emergency Surgery for Max",
+  "description": "Help us cover Max's surgery and recovery costs.",
+  "totalCost": 25000.00,
+  "deadline": "2026-04-30",
+  "startDate": "2026-03-20",
+  "photo": "https://example.com/photos/max-campaign.jpg",
+  "isUrgent": true,
+  "status": "ONGOING",
+  "type": "HEALTH"
+}
+
+Notes:
+- ID is auto-generated as UUID
+- updatedDate is auto-generated on create and update
+- Required fields: title, totalCost, status, type
+- Deadline cannot be earlier than startDate
+- Allowed status values:
+  ONGOING
+  COMPLETED
+  CANCELLED
+- Allowed type values:
+  HEALTH
+  FOOD
+  SHELTER
+  RESCUE
+  MEDICINE
+  EDUCATION
+  OTHER
+
+2. Get Donation Campaign List
+GET /
+
+3. Get Donation Campaign Types Reference
+GET /types
+
+Sample response:
+[
+  "HEALTH",
+  "FOOD",
+  "SHELTER",
+  "RESCUE",
+  "MEDICINE",
+  "EDUCATION",
+  "OTHER"
+]
+
+4. Get One Donation Campaign
+GET /{id}
+
+Sample:
+GET /550e8400-e29b-41d4-a716-446655440000
+
+5. Update Donation Campaign
+PUT /{id}
+Content-Type: application/json
+
+Sample body:
+{
+  "title": "Emergency Surgery for Max",
+  "description": "Updated campaign details for Max's treatment.",
+  "totalCost": 27500.00,
+  "deadline": "2026-05-05",
+  "startDate": "2026-03-20",
+  "photo": "https://example.com/photos/max-campaign-updated.jpg",
+  "isUrgent": true,
+  "status": "ONGOING",
+  "type": "HEALTH"
+}
+
+6. Delete Donation Campaign
+DELETE /{id}
+
+Sample:
+DELETE /550e8400-e29b-41d4-a716-446655440000

@@ -1,0 +1,50 @@
+PAYMENT MODE ENDPOINTS
+
+Base URL:
+http://localhost:8080/api/payment-modes
+
+Authorization:
+Bearer Token required
+
+Header:
+Authorization: Bearer your-token-here
+
+1. Create Payment Mode
+POST /
+Content-Type: application/json
+
+Sample body:
+{
+  "name": "GCash",
+  "photoQr": "https://example.com/qr/gcash.png"
+}
+
+Notes:
+- ID is auto-generated as UUID
+- createdDate is auto-generated on create
+- Required field: name
+
+2. Get Payment Mode List
+GET /
+
+3. Get One Payment Mode
+GET /{id}
+
+Sample:
+GET /550e8400-e29b-41d4-a716-446655440000
+
+4. Update Payment Mode
+PUT /{id}
+Content-Type: application/json
+
+Sample body:
+{
+  "name": "Maya",
+  "photoQr": "https://example.com/qr/maya.png"
+}
+
+5. Delete Payment Mode
+DELETE /{id}
+
+Sample:
+DELETE /550e8400-e29b-41d4-a716-446655440000

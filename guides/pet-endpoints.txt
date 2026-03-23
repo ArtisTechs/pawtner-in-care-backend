@@ -1,0 +1,77 @@
+PET ENDPOINTS
+
+Base URL:
+http://localhost:8080/api/pets
+
+Authorization:
+Bearer Token required
+
+Header:
+Authorization: Bearer your-token-here
+
+1. Create Pet
+POST /
+Content-Type: application/json
+
+Sample body:
+{
+  "name": "Buddy",
+  "gender": "Male",
+  "weight": 12.50,
+  "height": 35.20,
+  "birthDate": "2022-01-10",
+  "adoptionDate": "2023-06-15",
+  "rescuedDate": "2022-02-01",
+  "description": "Friendly rescued dog",
+  "photo": "https://example.com/photos/buddy.jpg",
+  "videos": "https://example.com/videos/buddy.mp4",
+  "isVaccinated": true,
+  "type": "Dog",
+  "status": "AVAILABLE_FOR_ADOPTION"
+}
+
+Notes:
+- ID is auto-generated as UUID
+- Age is auto-computed from birthDate
+- Required fields: name, gender, type, status
+- Allowed status values:
+  RESCUED
+  ADOPTED
+  ONGOING_ADOPTION
+  AVAILABLE_FOR_ADOPTION
+
+2. Get Pet List
+GET /
+
+3. Get One Pet
+GET /{id}
+
+Sample:
+GET /550e8400-e29b-41d4-a716-446655440000
+
+4. Update Pet
+PUT /{id}
+Content-Type: application/json
+
+Sample body:
+{
+  "name": "Buddy",
+  "gender": "Male",
+  "weight": 13.10,
+  "height": 36.00,
+  "birthDate": "2022-01-10",
+  "adoptionDate": "2023-06-15",
+  "rescuedDate": "2022-02-01",
+  "description": "Friendly dog with updated details",
+  "photo": "https://example.com/photos/buddy-new.jpg",
+  "videos": "https://example.com/videos/buddy-new.mp4",
+  "isVaccinated": true,
+  "type": "Dog",
+  "status": "ADOPTED"
+}
+
+5. Delete Pet
+DELETE /{id}
+
+Sample:
+DELETE /550e8400-e29b-41d4-a716-446655440000

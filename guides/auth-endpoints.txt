@@ -49,6 +49,9 @@ Sample success response:
 POST /send-otp
 Content-Type: application/json
 
+Authorization:
+No bearer token required
+
 Sample body:
 {
   "email": "jane@example.com",
@@ -63,6 +66,9 @@ Allowed purpose values:
 4. Confirm OTP
 POST /confirm-otp
 Content-Type: application/json
+
+Authorization:
+No bearer token required
 
 Sample body:
 {

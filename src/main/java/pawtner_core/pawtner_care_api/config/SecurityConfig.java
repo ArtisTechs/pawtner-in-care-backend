@@ -26,7 +26,11 @@ public class SecurityConfig {
             .authorizeHttpRequests((authorize) -> authorize
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/users/**").authenticated()
-                .anyRequest().permitAll()
+                .requestMatchers("/api/pets/**").authenticated()
+                .requestMatchers("/api/donation-campaigns/**").authenticated()
+                .requestMatchers("/api/payment-modes/**").authenticated()
+                .requestMatchers("/api/donation-transactions/**").authenticated()
+                .anyRequest().authenticated()
             )
             .addFilterBefore(bearerTokenAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

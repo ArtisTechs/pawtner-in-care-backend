@@ -2,6 +2,7 @@ package pawtner_core.pawtner_care_api.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -34,6 +35,8 @@ public record PetRequest(
     @PastOrPresent(message = "Adoption date cannot be in the future")
     @JsonFormat(pattern = "yyyy-MM-dd")
     LocalDate adoptionDate,
+
+    UUID adoptedById,
 
     @PastOrPresent(message = "Rescued date cannot be in the future")
     @JsonFormat(pattern = "yyyy-MM-dd")

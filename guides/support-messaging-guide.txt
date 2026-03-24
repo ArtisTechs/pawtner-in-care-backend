@@ -1,0 +1,241 @@
+SUPPORT MESSAGING GUIDE
+
+Overview
+- The support messaging module is located at:
+  src/main/java/pawtner_core/pawtner_care_api/support
+- It is self-contained and does not require changes to the existing User entity.
+- It links to existing users through userId.
+- IDs use UUID.
+- Messages are persisted in the database and also broadcast in real time through WebSocket.
+
+What this module includes
+- Support conversation/thread model
+- Customer-to-admin support messages
+- Admin replies in the same conversation
+- Admin-side per-message read tracking
+- Customer-side last-read tracking at conversation level
+- Admin conversation list with filtering
+- Real-time publishing for new messages and read events
+- Integration with the existing UserRepository
+
+Main package structure
+- controller
+  CustomerSupportController
+  AdminSupportController
+- dto
+  request/response payloads for conversations, messages, read markers, and live events
+- entity
+  SupportConversation
+  SupportMessage
+  SupportMessageRead
+- enums
+  SupportConversationStatus
+  SupportMessageType
+  SupportParticipantRole
+- repository
+  JPA repositories for support tables
+- service
+  SupportConversationService
+  SupportMessagingService
+  SupportUserAccessService
+- websocket
+  SupportWebSocketConfig
+  SupportMessagingPublisher
+
+Generated database tables
+- support_conversations
+- support_messages
+- support_message_reads
+
+Entity behavior summary
+- SupportConversation
+  one active OPEN conversation per customer for now
+  stores customerUserId, status, lastMessageAt, customerLastReadAt, createdAt, updatedAt
+- SupportMessage
+  stores both customer and admin messages in the same table
+  each message stores senderUserId and senderRole
+  only TEXT is supported
+- SupportMessageRead
+  stores one read record per admin per message
+  supports multiple admins reading the same customer message independently
+
+Supported participant roles inside this module
+- CUSTOMER
+- ADMIN
+
+Important integration note
+- Your existing User entity currently uses:
+  ADMIN
+  USER
+- This module maps:
+  existing UserRole.ADMIN -> SupportParticipantRole.ADMIN
+  existing UserRole.USER -> SupportParticipantRole.CUSTOMER
+- That mapping is handled in:
+  src/main/java/pawtner_core/pawtner_care_api/support/service/SupportUserAccessService.java
+
+Supported message types
+- TEXT
+
+Supported conversation statuses
+- OPEN
+- CLOSED
+- ARCHIVED
+
+Unread logic
+- Admin unread count
+  derived from customer messages that do not yet have a SupportMessageRead row for that admin
+- Customer unread count
+  derived from admin messages created after SupportConversation.customerLastReadAt
+- This avoids using a single shared isRead flag and supports multiple admins correctly
+
+Auto conversation handling
+1. When a customer sends a message:
+- load existing active OPEN conversation for that customer
+- create one if none exists
+- save the message
+- update lastMessageAt
+- publish the new message in real time
+
+2. When an admin sends a message:
+- load the conversation
+- save the message
+- update lastMessageAt
+- publish the new message in real time
+
+Real-time WebSocket setup
+- STOMP endpoint:
+  /ws/support
+- Application prefix:
+  /app
+- Broker topic prefix:
+  /topic
+
+Published topics
+- Conversation stream for viewers of a specific conversation:
+  /topic/support/conversations/{conversationId}
+- Customer-specific stream:
+  /topic/support/customers/{customerUserId}
+- Admin-specific conversation stream:
+  /topic/support/admin/conversations/{conversationId}
+- Read events for a conversation:
+  /topic/support/conversations/{conversationId}/reads
+- Admin read event stream:
+  /topic/support/admin/conversations/{conversationId}/reads
+
+Live event payloads
+- New message payload class:
+  SupportRealtimeMessagePayload
+- Read event payload class:
+  SupportRealtimeReadPayload
+
+Customer support endpoints
+- GET /api/support/customer/conversation?customerUserId={customerUserId}
+  Returns the customer's active conversation details and customer unread count
+
+- GET /api/support/customer/messages?customerUserId={customerUserId}
+  Returns the customer's support message history in ascending createdAt order
+
+- POST /api/support/customer/messages?customerUserId={customerUserId}
+  Sends a customer message to support
+
+  Sample body:
+  {
+    "content": "Hello, I need help with my account."
+  }
+
+- POST /api/support/customer/read?customerUserId={customerUserId}
+  Marks admin messages as read for the customer by updating customerLastReadAt
+
+Admin support endpoints
+- GET /api/support/admin/conversations?adminUserId={adminUserId}
+  Returns support conversations for admins
+
+Available query params:
+- adminUserId
+- customerUserId
+- status
+- unreadOnly
+- page
+- size
+- sortBy
+- sortDir
+- ignorePagination
+
+Allowed sortBy values:
+- createdAt
+- updatedAt
+- lastMessageAt
+- status
+- customerUserId
+
+Allowed sortDir values:
+- asc
+- desc
+
+Example list requests
+- GET /api/support/admin/conversations?adminUserId={adminUserId}
+- GET /api/support/admin/conversations?adminUserId={adminUserId}&customerUserId={customerUserId}
+- GET /api/support/admin/conversations?adminUserId={adminUserId}&status=OPEN&unreadOnly=true&sortBy=lastMessageAt&sortDir=desc
+
+- GET /api/support/admin/conversations/{conversationId}?adminUserId={adminUserId}
+  Returns one conversation plus that admin's unread count
+
+- GET /api/support/admin/conversations/{conversationId}/messages?adminUserId={adminUserId}
+  Returns the full message history for the conversation
+
+- POST /api/support/admin/conversations/{conversationId}/messages?adminUserId={adminUserId}
+  Sends an admin reply in the conversation
+
+  Sample body:
+  {
+    "content": "Hello, we are checking your concern now."
+  }
+
+- POST /api/support/admin/conversations/{conversationId}/read?adminUserId={adminUserId}
+  Marks unread customer messages as read for that admin by inserting SupportMessageRead rows
+
+How admins see other admin messages
+- Admin messages are stored in support_messages with senderRole=ADMIN
+- All conversation history queries read from the same support_messages table
+- Because of that, admins can see:
+  customer messages
+  their own admin replies
+  admin replies from other admins in the same conversation
+
+Recommended client subscription behavior
+1. Customer client
+- subscribe to /topic/support/customers/{customerUserId}
+- optionally subscribe to /topic/support/conversations/{conversationId}
+
+2. Admin client
+- subscribe to /topic/support/admin/conversations/{conversationId}
+- subscribe to /topic/support/admin/conversations/{conversationId}/reads
+- optionally subscribe to /topic/support/conversations/{conversationId}
+
+Suggested security integration
+- The controllers currently accept adminUserId and customerUserId as request parameters.
+- In a secured app, replace those request params with the authenticated principal or JWT claims.
+- Keep the service layer methods the same and resolve the userId before calling them.
+
+Suggested rollout
+1. Start the app so Hibernate creates the support tables.
+2. Test customer message send.
+3. Test admin reply.
+4. Test admin unread counts with two different admin accounts.
+5. Test customer read tracking.
+6. Connect your frontend to the STOMP endpoint and subscribe to the live topics.
+
+Files to look at first
+- src/main/java/pawtner_core/pawtner_care_api/support/controller/CustomerSupportController.java
+- src/main/java/pawtner_core/pawtner_care_api/support/controller/AdminSupportController.java
+- src/main/java/pawtner_core/pawtner_care_api/support/service/SupportMessagingService.java
+- src/main/java/pawtner_core/pawtner_care_api/support/service/SupportConversationService.java
+- src/main/java/pawtner_core/pawtner_care_api/support/service/SupportUserAccessService.java
+- src/main/java/pawtner_core/pawtner_care_api/support/websocket/SupportWebSocketConfig.java
+- src/main/java/pawtner_core/pawtner_care_api/support/websocket/SupportMessagingPublisher.java
+
+Notes
+- Controllers are intentionally thin.
+- Security is not assumed in this module, so you can plug your own auth rules on top.
+- The current module uses request params for acting user IDs only as a simple integration placeholder.
+- If you later want WebSocket user-specific delivery with authenticated sessions, you can replace the topic strategy without rewriting the persistence layer.

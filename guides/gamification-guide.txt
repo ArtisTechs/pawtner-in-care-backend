@@ -1,0 +1,363 @@
+GAMIFICATION / HEROES WALL GUIDE
+
+Overview
+- The gamification module is located at:
+  src/main/java/pawtner_core/pawtner_care_api/gamification
+- It is self-contained and does not require changes to the existing User entity.
+- It links to existing users through userId.
+- IDs use UUID.
+
+What this module includes
+- Achievement definitions
+- User achievement progress and unlocks
+- User stats aggregation
+- Activity event recording
+- Automatic achievement evaluation
+- Manual admin assignment
+- Public Heroes Wall endpoints
+- Default seed achievements
+- Integration service for signup, adoption, donation, and monthly activity flows
+
+Main package structure
+- controller
+  HeroesWallController
+  GamificationEventController
+  AchievementAdminController
+- dto
+  request/response payloads for achievements, progress, heroes wall, and events
+- entity
+  Achievement
+  UserAchievement
+  UserStats
+  ActivityEvent
+- enums
+  supported trigger, rule, rarity, category, visibility, and assignment enums
+- repository
+  JPA repositories for all gamification tables
+- rules
+  rule evaluator classes
+- service
+  stats update, event handling, achievement evaluation, mapping, seed data, integration helpers
+
+Generated database tables
+- achievements
+- user_achievements
+- user_stats
+- activity_events
+
+Because the project uses:
+- spring.jpa.hibernate.ddl-auto: update
+
+The tables/columns should be created automatically when the app starts.
+
+Supported automatic event types
+- USER_REGISTERED
+- PET_ADOPTED
+- DONATION_MADE
+- USER_ACTIVE_MONTH
+
+Supported rule types
+- FIRST_ACTION
+- COUNT_THRESHOLD
+- STREAK
+- BOOLEAN_ACTION
+
+How auto unlock works
+1. Record an activity event.
+2. User stats are updated.
+3. Active AUTO achievements with the matching trigger are evaluated.
+4. Matching achievements are unlocked.
+5. Non-repeatable achievements are not duplicated.
+
+Important implementation note
+- ruleConfig and metadata are stored and returned as raw JSON strings.
+- Example:
+  {"statField":"totalDonations","target":5}
+
+Default seed achievements
+- REGISTERED_HERO
+- FIRST_ADOPTION
+- FIVE_DONATIONS
+- THREE_ACTIVE_MONTHS
+
+Custom achievements / badges
+- You can now create custom achievements from the admin API.
+- Custom achievements can be:
+  created
+  listed
+  viewed by id
+  updated
+  activated/deactivated
+  manually assigned
+  deleted only if there are no linked user_achievements
+
+Admin achievement management endpoints
+- GET /api/gamification/admin/achievements
+  List achievements with pagination, sorting, and filters
+
+- GET /api/gamification/admin/achievements/{id}
+  Get one achievement
+
+- POST /api/gamification/admin/achievements
+  Create a custom achievement
+
+- PUT /api/gamification/admin/achievements/{id}
+  Update an existing achievement
+
+- PUT /api/gamification/admin/achievements/{id}/status
+  Activate or deactivate an achievement
+
+- DELETE /api/gamification/admin/achievements/{id}
+  Delete an achievement only if there are no linked user achievements
+
+How to seed default achievements
+Endpoint:
+- POST /api/gamification/admin/achievements/seed-defaults
+
+Example response:
+- creates the default achievements if they do not already exist
+
+Create a custom achievement
+Endpoint:
+- POST /api/gamification/admin/achievements
+
+Achievement listing filters
+- `search`
+- `code`
+- `title`
+- `category`
+- `rarity`
+- `isActive`
+- `isRepeatable`
+- `visibility`
+- `assignmentType`
+- `triggerType`
+- `ruleType`
+- `startAtFrom`
+- `startAtTo`
+- `endAtFrom`
+- `endAtTo`
+- `page`
+- `size`
+- `sortBy`
+- `sortDir`
+- `ignorePagination`
+
+Example achievement list requests
+- GET /api/gamification/admin/achievements?page=0&size=10&sortBy=createdAt&sortDir=desc&ignorePagination=false
+- GET /api/gamification/admin/achievements?search=donation&isActive=true&assignmentType=AUTO&ignorePagination=true
+- GET /api/gamification/admin/achievements?category=DONATION&ruleType=COUNT_THRESHOLD&sortBy=points&sortDir=desc
+
+Example request:
+{
+  "code": "TOP_RESCUE_SUPPORTER",
+  "title": "Top Rescue Supporter",
+  "description": "Awarded to a supporter who reached 10 donation actions.",
+  "iconUrl": "https://example.com/badges/top-rescue-supporter.png",
+  "category": "DONATION",
+  "points": 300,
+  "rarity": "EPIC",
+  "isActive": true,
+  "isRepeatable": false,
+  "visibility": "PUBLIC",
+  "assignmentType": "AUTO",
+  "triggerType": "DONATION_MADE",
+  "ruleType": "COUNT_THRESHOLD",
+  "ruleConfig": "{\"statField\":\"totalDonations\",\"target\":10}",
+  "startAt": null,
+  "endAt": null
+}
+
+Manual-only badge example
+{
+  "code": "COMMUNITY_HERO",
+  "title": "Community Hero",
+  "description": "Special recognition badge assigned by admins.",
+  "iconUrl": "https://example.com/badges/community-hero.png",
+  "category": "ENGAGEMENT",
+  "points": 500,
+  "rarity": "LEGENDARY",
+  "isActive": true,
+  "isRepeatable": false,
+  "visibility": "PUBLIC",
+  "assignmentType": "MANUAL",
+  "triggerType": "MANUAL",
+  "ruleType": "BOOLEAN_ACTION",
+  "ruleConfig": null,
+  "startAt": null,
+  "endAt": null
+}
+
+Update an achievement
+Endpoint:
+- PUT /api/gamification/admin/achievements/{id}
+
+Notes:
+- `code` must stay unique
+- `endAt` cannot be earlier than `startAt`
+
+Activate or deactivate an achievement
+Endpoint:
+- PUT /api/gamification/admin/achievements/{id}/status
+
+Example request:
+{
+  "isActive": false
+}
+
+Delete an achievement
+Endpoint:
+- DELETE /api/gamification/admin/achievements/{id}
+
+Delete rule:
+- deletion is blocked if there is already a linked record in `user_achievements`
+- this protects historical unlock/progress data
+
+Manual assignment
+Endpoint:
+- POST /api/gamification/admin/achievements/assign
+
+Example request by achievement code:
+{
+  "userId": "11111111-1111-1111-1111-111111111111",
+  "achievementCode": "FIRST_ADOPTION",
+  "metadata": "{\"assignedBy\":\"admin\"}"
+}
+
+Example request by achievement id:
+{
+  "userId": "11111111-1111-1111-1111-111111111111",
+  "achievementId": "22222222-2222-2222-2222-222222222222",
+  "metadata": "{\"reason\":\"special recognition\"}"
+}
+
+Record activity events manually
+Endpoint:
+- POST /api/gamification/events
+
+Example registered user event:
+{
+  "userId": "11111111-1111-1111-1111-111111111111",
+  "eventType": "USER_REGISTERED",
+  "value": 1
+}
+
+Example pet adopted event:
+{
+  "userId": "11111111-1111-1111-1111-111111111111",
+  "eventType": "PET_ADOPTED",
+  "value": 1,
+  "metadata": "{\"petId\":\"33333333-3333-3333-3333-333333333333\"}"
+}
+
+Example donation made event:
+{
+  "userId": "11111111-1111-1111-1111-111111111111",
+  "eventType": "DONATION_MADE",
+  "value": 1,
+  "metadata": "{\"donationId\":\"44444444-4444-4444-4444-444444444444\"}"
+}
+
+Example active month event:
+{
+  "userId": "11111111-1111-1111-1111-111111111111",
+  "eventType": "USER_ACTIVE_MONTH",
+  "value": 1,
+  "metadata": "{\"month\":\"2026-03\"}"
+}
+
+Heroes Wall and progress endpoints
+- GET /api/gamification/heroes-wall
+  Public leaderboard view
+
+- GET /api/gamification/users/{userId}/achievements
+  Full achievement history for a user
+
+- GET /api/gamification/users/{userId}/heroes-wall
+  Public achievement wall for one user
+
+- GET /api/gamification/users/{userId}/progress
+  Current progress summary including stats and achievement progress
+
+Example heroes wall request
+- GET /api/gamification/heroes-wall?page=0&size=10
+
+How to integrate into existing services
+
+Use:
+- pawtner_core.pawtner_care_api.gamification.service.GamificationIntegrationService
+
+Available helper methods
+- onUserRegistered(UUID userId)
+- onPetAdopted(UUID userId)
+- onDonationMade(UUID userId, BigDecimal donationCountIncrement)
+- onUserActiveMonth(UUID userId)
+
+Recommended integration points
+
+1. After successful signup/user creation
+- Call onUserRegistered(userId)
+
+Example:
+private final GamificationIntegrationService gamificationIntegrationService;
+
+public AuthService(..., GamificationIntegrationService gamificationIntegrationService) {
+    ...
+    this.gamificationIntegrationService = gamificationIntegrationService;
+}
+
+public AuthResponse signup(SignupRequest request) {
+    User user = ...
+    gamificationIntegrationService.onUserRegistered(user.getId());
+    ...
+}
+
+2. After a pet adoption is finalized
+- Call onPetAdopted(adopterUserId)
+
+Example:
+gamificationIntegrationService.onPetAdopted(adopterUserId);
+
+3. After a donation transaction succeeds
+- Call onDonationMade(userId, BigDecimal.ONE)
+
+Example:
+gamificationIntegrationService.onDonationMade(userId, BigDecimal.ONE);
+
+4. When a user completes a tracked active month
+- Call onUserActiveMonth(userId)
+
+Example:
+gamificationIntegrationService.onUserActiveMonth(userId);
+
+Suggested order for rollout
+1. Start the app so Hibernate creates the new tables.
+2. Seed the default achievements.
+3. Create any custom badges or achievements you want.
+4. Test manual event recording through /api/gamification/events.
+5. Verify /heroes-wall and /progress endpoints.
+6. Wire GamificationIntegrationService into real signup/adoption/donation flows.
+
+Example testing flow
+1. Create or use an existing user.
+2. Seed achievements.
+3. POST USER_REGISTERED event.
+4. Check GET /api/gamification/users/{userId}/achievements
+5. POST PET_ADOPTED event.
+6. POST DONATION_MADE event multiple times.
+7. Check GET /api/gamification/users/{userId}/progress
+8. Check GET /api/gamification/heroes-wall
+
+Files to look at first
+- src/main/java/pawtner_core/pawtner_care_api/gamification/controller/HeroesWallController.java
+- src/main/java/pawtner_core/pawtner_care_api/gamification/controller/GamificationEventController.java
+- src/main/java/pawtner_core/pawtner_care_api/gamification/controller/AchievementAdminController.java
+- src/main/java/pawtner_core/pawtner_care_api/gamification/service/GamificationIntegrationService.java
+- src/main/java/pawtner_core/pawtner_care_api/gamification/service/AchievementEvaluationService.java
+- src/main/java/pawtner_core/pawtner_care_api/gamification/service/AchievementSeedService.java
+
+Notes
+- Controllers are intentionally thin.
+- Security is not assumed in this module, so you can plug your own auth rules on top.
+- The module currently resolves user display data from the existing UserRepository through ExistingUserGamificationProfileService.
+- If your user profile model changes later, you can replace that service without rewriting the rest of the module.

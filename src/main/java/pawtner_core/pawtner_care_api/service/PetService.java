@@ -18,12 +18,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import pawtner_core.pawtner_care_api.dto.PageResponse;
+import pawtner_core.pawtner_care_api.dto.PetAdopterResponse;
 import pawtner_core.pawtner_care_api.dto.PetRequest;
 import pawtner_core.pawtner_care_api.dto.PetResponse;
 import pawtner_core.pawtner_care_api.entity.Pet;
+import pawtner_core.pawtner_care_api.entity.User;
 import pawtner_core.pawtner_care_api.enums.PetStatus;
 import pawtner_core.pawtner_care_api.exception.ResourceNotFoundException;
 import pawtner_core.pawtner_care_api.repository.PetRepository;
+import pawtner_core.pawtner_care_api.repository.UserRepository;
 
 @Service
 public class PetService {
@@ -43,9 +46,11 @@ public class PetService {
     );
 
     private final PetRepository petRepository;
+    private final UserRepository userRepository;
 
-    public PetService(PetRepository petRepository) {
+    public PetService(PetRepository petRepository, UserRepository userRepository) {
         this.petRepository = petRepository;
+        this.userRepository = userRepository;
     }
 
     @Transactional(readOnly = true)
@@ -185,6 +190,7 @@ public class PetService {
         pet.setHeight(request.height());
         pet.setBirthDate(request.birthDate());
         pet.setAdoptionDate(request.adoptionDate());
+        pet.setAdoptedBy(resolveAdoptedBy(request.adoptedById()));
         pet.setRescuedDate(request.rescuedDate());
         pet.setDescription(normalizeOptionalText(request.description()));
         pet.setPhoto(normalizeOptionalText(request.photo()));
@@ -274,6 +280,7 @@ public class PetService {
             pet.getBirthDate(),
             calculateAge(pet.getBirthDate()),
             pet.getAdoptionDate(),
+            toAdopterResponse(pet.getAdoptedBy()),
             pet.getRescuedDate(),
             pet.getDescription(),
             pet.getPhoto(),
@@ -281,6 +288,29 @@ public class PetService {
             pet.getIsVaccinated(),
             pet.getType(),
             pet.getStatus()
+        );
+    }
+
+    private User resolveAdoptedBy(UUID adoptedById) {
+        if (adoptedById == null) {
+            return null;
+        }
+
+        return userRepository.findById(adoptedById)
+            .orElseThrow(() -> new ResourceNotFoundException("User with id " + adoptedById + " was not found"));
+    }
+
+    private PetAdopterResponse toAdopterResponse(User user) {
+        if (user == null) {
+            return null;
+        }
+
+        return new PetAdopterResponse(
+            user.getId(),
+            user.getFirstName(),
+            user.getMiddleName(),
+            user.getLastName(),
+            user.getEmail()
         );
     }
 

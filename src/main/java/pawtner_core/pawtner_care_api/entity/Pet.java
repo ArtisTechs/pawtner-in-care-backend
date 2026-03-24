@@ -14,6 +14,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import pawtner_core.pawtner_care_api.enums.PetStatus;
 
@@ -66,6 +68,10 @@ public class Pet {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private PetStatus status;
+
+    @ManyToOne
+    @JoinColumn(name = "adopted_by_id")
+    private User adoptedBy;
 
     public UUID getId() {
         return id;
@@ -177,5 +183,13 @@ public class Pet {
 
     public void setStatus(PetStatus status) {
         this.status = status;
+    }
+
+    public User getAdoptedBy() {
+        return adoptedBy;
+    }
+
+    public void setAdoptedBy(User adoptedBy) {
+        this.adoptedBy = adoptedBy;
     }
 }

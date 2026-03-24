@@ -15,6 +15,7 @@ public record PetResponse(
     LocalDate birthDate,
     Integer age,
     LocalDate adoptionDate,
+    PetAdopterResponse adoptedBy,
     LocalDate rescuedDate,
     String description,
     String photo,

@@ -14,6 +14,8 @@ import pawtner_core.pawtner_care_api.auth.dto.LoginRequest;
 import pawtner_core.pawtner_care_api.auth.dto.OtpConfirmRequest;
 import pawtner_core.pawtner_care_api.auth.dto.OtpResponse;
 import pawtner_core.pawtner_care_api.auth.dto.OtpSendRequest;
+import pawtner_core.pawtner_care_api.auth.dto.ResetPasswordRequest;
+import pawtner_core.pawtner_care_api.auth.dto.ResetPasswordResponse;
 import pawtner_core.pawtner_care_api.auth.dto.SignupRequest;
 import pawtner_core.pawtner_care_api.user.dto.UserResponse;
 import pawtner_core.pawtner_care_api.auth.service.AuthService;
@@ -49,6 +51,11 @@ public class AuthController {
     @PostMapping("/confirm-otp")
     public OtpResponse confirmOtp(@Valid @RequestBody OtpConfirmRequest request) {
         return otpService.confirmOtp(request);
+    }
+
+    @PostMapping("/reset-password")
+    public ResetPasswordResponse resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        return authService.resetPassword(request);
     }
 }
 

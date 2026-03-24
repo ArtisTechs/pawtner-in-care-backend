@@ -71,24 +71,15 @@ public class OtpService {
     public OtpResponse confirmOtp(OtpConfirmRequest request) {
         String normalizedEmail = normalizeEmail(request.email());
         String normalizedPurpose = normalizePurpose(request.purpose());
-        EmailOtp emailOtp = emailOtpRepository.findTopByEmailAndPurposeOrderByCreatedAtDesc(normalizedEmail, normalizedPurpose)
-            .orElseThrow(() -> new IllegalArgumentException("No OTP request found for this email and purpose"));
-
-        if (emailOtp.getConsumedAt() != null) {
-            throw new IllegalArgumentException("OTP has already been used");
-        }
-
-        if (emailOtp.getExpiresAt().isBefore(Instant.now())) {
-            throw new IllegalArgumentException("OTP has expired");
-        }
-
-        if (!emailOtp.getOtpHash().equals(hashOtp(request.otp().trim()))) {
-            throw new IllegalArgumentException("Invalid OTP");
-        }
+        EmailOtp emailOtp = findLatestOtp(normalizedEmail, normalizedPurpose);
+        validateOtpCanBeUsed(emailOtp);
+        validateOtpCode(emailOtp, request.otp());
 
         Instant now = Instant.now();
         emailOtp.setVerifiedAt(now);
-        emailOtp.setConsumedAt(now);
+        if (!"reset-password".equals(normalizedPurpose)) {
+            emailOtp.setConsumedAt(now);
+        }
         emailOtpRepository.save(emailOtp);
 
         return new OtpResponse(
@@ -97,6 +88,19 @@ public class OtpService {
             "OTP confirmed successfully",
             emailOtp.getExpiresAt()
         );
+    }
+
+    @Transactional
+    public void consumeVerifiedResetPasswordOtp(String email) {
+        EmailOtp emailOtp = findLatestOtp(normalizeEmail(email), "reset-password");
+        validateOtpCanBeUsed(emailOtp);
+
+        if (emailOtp.getVerifiedAt() == null) {
+            throw new IllegalArgumentException("Reset password OTP has not been verified yet");
+        }
+
+        emailOtp.setConsumedAt(Instant.now());
+        emailOtpRepository.save(emailOtp);
     }
 
     private String normalizeEmail(String email) {
@@ -109,6 +113,27 @@ public class OtpService {
             throw new IllegalArgumentException("Unsupported OTP purpose: " + normalizedPurpose);
         }
         return normalizedPurpose;
+    }
+
+    private EmailOtp findLatestOtp(String email, String purpose) {
+        return emailOtpRepository.findTopByEmailAndPurposeOrderByCreatedAtDesc(email, purpose)
+            .orElseThrow(() -> new IllegalArgumentException("No OTP request found for this email and purpose"));
+    }
+
+    private void validateOtpCanBeUsed(EmailOtp emailOtp) {
+        if (emailOtp.getConsumedAt() != null) {
+            throw new IllegalArgumentException("OTP has already been used");
+        }
+
+        if (emailOtp.getExpiresAt().isBefore(Instant.now())) {
+            throw new IllegalArgumentException("OTP has expired");
+        }
+    }
+
+    private void validateOtpCode(EmailOtp emailOtp, String otp) {
+        if (!emailOtp.getOtpHash().equals(hashOtp(otp.trim()))) {
+            throw new IllegalArgumentException("Invalid OTP");
+        }
     }
 
     private String generateOtpCode() {

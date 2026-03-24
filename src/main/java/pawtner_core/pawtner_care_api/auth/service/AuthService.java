@@ -7,6 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import pawtner_core.pawtner_care_api.auth.dto.AuthResponse;
 import pawtner_core.pawtner_care_api.auth.dto.LoginRequest;
+import pawtner_core.pawtner_care_api.auth.dto.ResetPasswordRequest;
+import pawtner_core.pawtner_care_api.auth.dto.ResetPasswordResponse;
 import pawtner_core.pawtner_care_api.auth.dto.SignupRequest;
 import pawtner_core.pawtner_care_api.user.dto.UserRequest;
 import pawtner_core.pawtner_care_api.user.dto.UserResponse;
@@ -20,17 +22,20 @@ public class AuthService {
 
     private final UserService userService;
     private final UserRepository userRepository;
+    private final OtpService otpService;
     private final String apiBearerToken;
     private final PasswordEncoder passwordEncoder;
 
     public AuthService(
         UserService userService,
         UserRepository userRepository,
+        OtpService otpService,
         @Value("${API_BEARER_TOKEN}") String apiBearerToken,
         PasswordEncoder passwordEncoder
     ) {
         this.userService = userService;
         this.userRepository = userRepository;
+        this.otpService = otpService;
         this.apiBearerToken = apiBearerToken;
         this.passwordEncoder = passwordEncoder;
     }
@@ -74,6 +79,22 @@ public class AuthService {
         );
     }
 
+    @Transactional
+    public ResetPasswordResponse resetPassword(ResetPasswordRequest request) {
+        String normalizedEmail = request.email().trim().toLowerCase();
+        validatePasswordConfirmation(request.newPassword(), request.confirmPassword());
+
+        User user = userRepository.findByEmail(normalizedEmail)
+            .orElseThrow(() -> new IllegalArgumentException("User with email " + normalizedEmail + " was not found"));
+
+        otpService.consumeVerifiedResetPasswordOtp(normalizedEmail);
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+
+        return new ResetPasswordResponse(normalizedEmail, "Password reset successfully");
+    }
+
     private boolean isPasswordValid(User user, String rawPassword) {
         String storedPassword = user.getPassword();
 
@@ -88,6 +109,12 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(rawPassword));
         userRepository.save(user);
         return true;
+    }
+
+    private void validatePasswordConfirmation(String newPassword, String confirmPassword) {
+        if (!newPassword.equals(confirmPassword)) {
+            throw new IllegalArgumentException("New password and confirm password do not match");
+        }
     }
 }
 

@@ -76,3 +76,35 @@ Sample body:
   "otp": "123456",
   "purpose": "signup"
 }
+
+5. Reset Password
+POST /reset-password
+Content-Type: application/json
+
+Authorization:
+No bearer token required
+
+Important:
+- Use purpose `reset-password` when requesting the OTP
+- You must call `/confirm-otp` first with purpose `reset-password`
+- `/reset-password` only works after the latest reset-password OTP has already been verified
+- `/reset-password` consumes the verified OTP after the password is changed
+
+Recommended flow:
+1. Call `POST /send-otp` with purpose `reset-password`
+2. Check the email inbox for the 6-digit OTP
+3. Call `POST /confirm-otp` with the email, OTP, and purpose `reset-password`
+4. Call `POST /reset-password` with the email and new password
+
+Sample body:
+{
+  "email": "jane@example.com",
+  "newPassword": "NewPass123!",
+  "confirmPassword": "NewPass123!"
+}
+
+Sample success response:
+{
+  "email": "jane@example.com",
+  "message": "Password reset successfully"
+}

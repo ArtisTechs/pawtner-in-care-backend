@@ -19,3 +19,4 @@ public class FirstActionRuleEvaluator extends AbstractAchievementRuleEvaluator {
         return new RuleProgress(current, 1L, current >= 1L);
     }
 }
+

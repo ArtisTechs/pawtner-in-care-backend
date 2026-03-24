@@ -16,3 +16,4 @@ public interface CommunityPostHashtagRepository extends JpaRepository<CommunityP
 
     void deleteByPostId(UUID postId);
 }
+

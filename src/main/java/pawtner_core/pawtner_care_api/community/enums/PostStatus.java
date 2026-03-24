@@ -5,3 +5,4 @@ public enum PostStatus {
     DELETED,
     HIDDEN
 }
+

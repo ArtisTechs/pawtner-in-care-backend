@@ -80,3 +80,4 @@ public class Hashtag {
         this.createdAt = createdAt;
     }
 }
+

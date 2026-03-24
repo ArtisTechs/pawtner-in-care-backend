@@ -8,3 +8,4 @@ import pawtner_core.pawtner_care_api.support.entity.SupportMessageRead;
 
 public interface SupportMessageReadRepository extends JpaRepository<SupportMessageRead, UUID> {
 }
+

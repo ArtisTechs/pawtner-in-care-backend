@@ -87,3 +87,4 @@ public class CommunityPostMapper {
         return new PostMediaResponse(media.getId(), media.getMediaUrl(), media.getMediaType(), media.getSortOrder());
     }
 }
+

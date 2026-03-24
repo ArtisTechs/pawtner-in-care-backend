@@ -216,3 +216,4 @@ public class CommunityPost {
         this.comments = comments;
     }
 }
+

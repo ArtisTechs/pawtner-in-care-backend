@@ -18,7 +18,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import pawtner_core.pawtner_care_api.dto.PageResponse;
+import pawtner_core.pawtner_care_api.common.dto.PageResponse;
 import pawtner_core.pawtner_care_api.exception.ResourceNotFoundException;
 import pawtner_core.pawtner_care_api.support.dto.SupportConversationDetailsResponse;
 import pawtner_core.pawtner_care_api.support.dto.SupportConversationResponse;
@@ -242,3 +242,4 @@ public class SupportConversationService {
         }
     }
 }
+

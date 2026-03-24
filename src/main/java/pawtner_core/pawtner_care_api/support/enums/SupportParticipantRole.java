@@ -4,3 +4,4 @@ public enum SupportParticipantRole {
     CUSTOMER,
     ADMIN
 }
+

@@ -13,3 +13,4 @@ public interface CommunityPostCommentRepository extends JpaRepository<CommunityP
 
     Page<CommunityPostComment> findByPostIdAndStatusAndDeletedAtIsNull(UUID postId, CommentStatus status, Pageable pageable);
 }
+

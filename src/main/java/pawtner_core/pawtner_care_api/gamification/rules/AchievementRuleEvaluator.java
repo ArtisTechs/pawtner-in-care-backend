@@ -8,3 +8,4 @@ public interface AchievementRuleEvaluator {
 
     RuleProgress evaluate(AchievementRuleEvaluationContext context);
 }
+

@@ -22,3 +22,4 @@ public interface UserAchievementRepository extends JpaRepository<UserAchievement
 
     Optional<UserAchievement> findFirstByUserIdAndAchievement_IdOrderByCreatedAtDesc(UUID userId, UUID achievementId);
 }
+

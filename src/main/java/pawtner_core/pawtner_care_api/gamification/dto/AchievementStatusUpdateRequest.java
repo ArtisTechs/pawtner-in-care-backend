@@ -7,3 +7,4 @@ public record AchievementStatusUpdateRequest(
     Boolean isActive
 ) {
 }
+

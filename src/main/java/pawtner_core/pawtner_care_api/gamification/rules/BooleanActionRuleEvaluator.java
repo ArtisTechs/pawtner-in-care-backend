@@ -19,3 +19,4 @@ public class BooleanActionRuleEvaluator extends AbstractAchievementRuleEvaluator
         return new RuleProgress(unlocked ? 1L : 0L, 1L, unlocked);
     }
 }
+

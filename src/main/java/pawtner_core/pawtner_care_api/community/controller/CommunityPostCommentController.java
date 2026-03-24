@@ -20,7 +20,7 @@ import pawtner_core.pawtner_care_api.community.dto.CommentResponse;
 import pawtner_core.pawtner_care_api.community.dto.CommunityPostCommentCreateRequest;
 import pawtner_core.pawtner_care_api.community.dto.CommunityPostCommentUpdateRequest;
 import pawtner_core.pawtner_care_api.community.service.CommunityPostCommentService;
-import pawtner_core.pawtner_care_api.dto.PageResponse;
+import pawtner_core.pawtner_care_api.common.dto.PageResponse;
 
 @RestController
 @RequestMapping("/api/community/posts/{postId}/comments")
@@ -73,3 +73,4 @@ public class CommunityPostCommentController {
         return ResponseEntity.noContent().build();
     }
 }
+

@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import pawtner_core.pawtner_care_api.dto.PageResponse;
+import pawtner_core.pawtner_care_api.common.dto.PageResponse;
 import pawtner_core.pawtner_care_api.gamification.dto.GamificationUserProfileResponse;
 import pawtner_core.pawtner_care_api.gamification.dto.HeroesWallEntryResponse;
 import pawtner_core.pawtner_care_api.gamification.dto.UserAchievementResponse;
@@ -192,3 +192,4 @@ public class HeroesWallService {
         );
     }
 }
+

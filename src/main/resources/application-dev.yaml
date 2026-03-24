@@ -1,0 +1,8 @@
+spring:
+  devtools:
+    restart:
+      enabled: true
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true

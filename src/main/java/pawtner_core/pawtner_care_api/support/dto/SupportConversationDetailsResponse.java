@@ -5,3 +5,4 @@ public record SupportConversationDetailsResponse(
     long unreadCount
 ) {
 }
+

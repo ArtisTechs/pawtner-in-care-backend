@@ -4,10 +4,10 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import pawtner_core.pawtner_care_api.entity.User;
+import pawtner_core.pawtner_care_api.user.entity.User;
 import pawtner_core.pawtner_care_api.exception.ResourceNotFoundException;
 import pawtner_core.pawtner_care_api.gamification.dto.GamificationUserProfileResponse;
-import pawtner_core.pawtner_care_api.repository.UserRepository;
+import pawtner_core.pawtner_care_api.user.repository.UserRepository;
 
 @Service
 public class ExistingUserGamificationProfileService implements GamificationUserProfileService {
@@ -27,3 +27,4 @@ public class ExistingUserGamificationProfileService implements GamificationUserP
         return new GamificationUserProfileResponse(user.getId(), displayName, user.getEmail());
     }
 }
+

@@ -28,3 +28,4 @@ public record CommunityPostCreateRequest(
         return hasContent || hasMedia;
     }
 }
+

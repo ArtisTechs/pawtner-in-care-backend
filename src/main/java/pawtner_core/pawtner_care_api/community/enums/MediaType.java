@@ -4,3 +4,4 @@ public enum MediaType {
     IMAGE,
     VIDEO
 }
+

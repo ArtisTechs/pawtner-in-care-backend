@@ -7,3 +7,4 @@ public enum AchievementTriggerType {
     USER_ACTIVE_MONTH,
     MANUAL
 }
+

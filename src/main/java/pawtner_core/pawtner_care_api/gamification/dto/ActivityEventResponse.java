@@ -15,3 +15,4 @@ public record ActivityEventResponse(
     LocalDateTime createdAt
 ) {
 }
+

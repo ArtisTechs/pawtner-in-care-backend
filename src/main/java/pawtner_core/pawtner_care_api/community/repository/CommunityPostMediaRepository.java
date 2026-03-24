@@ -16,3 +16,4 @@ public interface CommunityPostMediaRepository extends JpaRepository<CommunityPos
 
     void deleteByPostId(UUID postId);
 }
+

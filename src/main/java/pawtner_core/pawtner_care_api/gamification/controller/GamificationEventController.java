@@ -28,3 +28,4 @@ public class GamificationEventController {
         return ResponseEntity.ok(activityEventService.recordEventAndUnlocks(request));
     }
 }
+

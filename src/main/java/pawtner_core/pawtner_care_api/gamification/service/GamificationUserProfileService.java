@@ -8,3 +8,4 @@ public interface GamificationUserProfileService {
 
     GamificationUserProfileResponse getProfile(UUID userId);
 }
+

@@ -6,3 +6,4 @@ public record SupportRealtimeMessagePayload(
     SupportMessageResponse message
 ) {
 }
+

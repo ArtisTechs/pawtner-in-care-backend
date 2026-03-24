@@ -107,3 +107,4 @@ public class CommunityPostMedia {
         this.createdAt = createdAt;
     }
 }
+

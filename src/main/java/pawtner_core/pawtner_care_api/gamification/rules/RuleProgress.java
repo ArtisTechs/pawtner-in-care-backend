@@ -6,3 +6,4 @@ public record RuleProgress(
     boolean unlocked
 ) {
 }
+

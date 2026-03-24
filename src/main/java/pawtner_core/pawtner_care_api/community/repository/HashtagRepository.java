@@ -15,3 +15,4 @@ public interface HashtagRepository extends JpaRepository<Hashtag, UUID> {
 
     List<Hashtag> findByNormalizedNameIn(Collection<String> normalizedNames);
 }
+

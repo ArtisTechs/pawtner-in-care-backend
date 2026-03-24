@@ -5,10 +5,10 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import pawtner_core.pawtner_care_api.entity.User;
-import pawtner_core.pawtner_care_api.enums.UserRole;
+import pawtner_core.pawtner_care_api.user.entity.User;
+import pawtner_core.pawtner_care_api.user.enums.UserRole;
 import pawtner_core.pawtner_care_api.exception.ResourceNotFoundException;
-import pawtner_core.pawtner_care_api.repository.UserRepository;
+import pawtner_core.pawtner_care_api.user.repository.UserRepository;
 import pawtner_core.pawtner_care_api.support.enums.SupportParticipantRole;
 
 @Service
@@ -48,3 +48,4 @@ public class SupportUserAccessService {
         return SupportParticipantRole.CUSTOMER;
     }
 }
+

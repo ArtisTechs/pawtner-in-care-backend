@@ -20,3 +20,4 @@ public class CountThresholdRuleEvaluator extends AbstractAchievementRuleEvaluato
         return new RuleProgress(current, target, current >= target);
     }
 }
+

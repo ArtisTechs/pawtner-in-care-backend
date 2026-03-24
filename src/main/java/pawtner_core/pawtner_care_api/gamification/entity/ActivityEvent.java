@@ -98,3 +98,4 @@ public class ActivityEvent {
         this.createdAt = createdAt;
     }
 }
+

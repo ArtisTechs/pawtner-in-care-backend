@@ -25,3 +25,4 @@ public interface AchievementRepository extends JpaRepository<Achievement, UUID>,
     );
     List<Achievement> findByIsActiveTrueOrderByPointsDescTitleAsc();
 }
+

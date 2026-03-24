@@ -17,3 +17,4 @@ public interface CommunityPostLikeRepository extends JpaRepository<CommunityPost
 
     List<CommunityPostLike> findByPostIdInAndUserId(Collection<UUID> postIds, UUID userId);
 }
+

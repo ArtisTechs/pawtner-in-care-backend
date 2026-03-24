@@ -58,3 +58,4 @@ public class SupportMessagingPublisher {
         simpMessagingTemplate.convertAndSend("/topic/support/admin/conversations/" + conversationId + "/reads", payload);
     }
 }
+

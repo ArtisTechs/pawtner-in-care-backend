@@ -18,3 +18,4 @@ public record ActivityEventRequest(
     String metadata
 ) {
 }
+

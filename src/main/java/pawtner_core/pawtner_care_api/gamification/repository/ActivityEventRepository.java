@@ -11,3 +11,4 @@ public interface ActivityEventRepository extends JpaRepository<ActivityEvent, UU
 
     List<ActivityEvent> findByUserIdOrderByCreatedAtDesc(UUID userId);
 }
+

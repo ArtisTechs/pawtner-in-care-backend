@@ -9,3 +9,4 @@ public record LikeResponse(
     long likeCount
 ) {
 }
+

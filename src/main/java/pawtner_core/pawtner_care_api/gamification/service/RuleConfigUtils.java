@@ -54,3 +54,4 @@ final class RuleConfigUtils {
         return value;
     }
 }
+

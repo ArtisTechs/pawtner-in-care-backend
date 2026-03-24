@@ -61,3 +61,4 @@ public interface SupportMessageRepository extends JpaRepository<SupportMessage, 
         @Param("adminUserId") UUID adminUserId
     );
 }
+

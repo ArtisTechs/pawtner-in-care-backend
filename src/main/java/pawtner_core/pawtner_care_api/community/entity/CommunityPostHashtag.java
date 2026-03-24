@@ -68,3 +68,4 @@ public class CommunityPostHashtag {
         this.hashtag = hashtag;
     }
 }
+

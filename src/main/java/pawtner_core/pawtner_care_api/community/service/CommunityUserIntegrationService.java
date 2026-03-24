@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import pawtner_core.pawtner_care_api.exception.ResourceNotFoundException;
-import pawtner_core.pawtner_care_api.repository.UserRepository;
+import pawtner_core.pawtner_care_api.user.repository.UserRepository;
 
 @Service
 public class CommunityUserIntegrationService {
@@ -22,3 +22,4 @@ public class CommunityUserIntegrationService {
         }
     }
 }
+

@@ -44,7 +44,7 @@ import pawtner_core.pawtner_care_api.community.repository.CommunityPostHashtagRe
 import pawtner_core.pawtner_care_api.community.repository.CommunityPostLikeRepository;
 import pawtner_core.pawtner_care_api.community.repository.CommunityPostMediaRepository;
 import pawtner_core.pawtner_care_api.community.repository.CommunityPostRepository;
-import pawtner_core.pawtner_care_api.dto.PageResponse;
+import pawtner_core.pawtner_care_api.common.dto.PageResponse;
 import pawtner_core.pawtner_care_api.exception.ResourceNotFoundException;
 
 @Service
@@ -396,3 +396,4 @@ public class CommunityPostService {
         }
     }
 }
+

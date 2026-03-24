@@ -4,3 +4,4 @@ public enum AchievementVisibility {
     PUBLIC,
     PRIVATE
 }
+

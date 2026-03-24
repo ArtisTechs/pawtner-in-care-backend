@@ -143,3 +143,4 @@ public class CommunityPostComment {
         this.deletedAt = deletedAt;
     }
 }
+

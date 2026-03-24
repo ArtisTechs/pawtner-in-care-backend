@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import pawtner_core.pawtner_care_api.dto.PageResponse;
+import pawtner_core.pawtner_care_api.common.dto.PageResponse;
 import pawtner_core.pawtner_care_api.gamification.dto.AchievementResponse;
 import pawtner_core.pawtner_care_api.gamification.dto.AchievementStatusUpdateRequest;
 import pawtner_core.pawtner_care_api.gamification.dto.AchievementUpsertRequest;
@@ -152,3 +152,4 @@ public class AchievementAdminController {
         return ResponseEntity.ok(response);
     }
 }
+

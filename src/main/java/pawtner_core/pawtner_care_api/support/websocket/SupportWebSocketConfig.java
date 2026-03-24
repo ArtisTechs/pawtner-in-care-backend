@@ -22,3 +22,4 @@ public class SupportWebSocketConfig implements WebSocketMessageBrokerConfigurer 
             .setAllowedOriginPatterns("*");
     }
 }
+

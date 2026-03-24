@@ -9,3 +9,4 @@ public record CommunityPostCommentUpdateRequest(
     String content
 ) {
 }
+

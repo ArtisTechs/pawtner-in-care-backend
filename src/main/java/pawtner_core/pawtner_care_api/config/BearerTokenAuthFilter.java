@@ -73,3 +73,4 @@ public class BearerTokenAuthFilter extends OncePerRequestFilter {
         response.getWriter().write("{\"status\":401,\"error\":\"Unauthorized\",\"message\":\"" + message + "\"}");
     }
 }
+

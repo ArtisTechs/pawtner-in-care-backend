@@ -70,3 +70,4 @@ public class CommunityPostLikeService {
         return communityPostMapper.toLikeResponse(post, currentUserId, false);
     }
 }
+

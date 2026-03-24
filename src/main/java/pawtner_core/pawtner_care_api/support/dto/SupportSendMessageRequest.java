@@ -9,3 +9,4 @@ public record SupportSendMessageRequest(
     String content
 ) {
 }
+

@@ -21,7 +21,7 @@ import pawtner_core.pawtner_care_api.community.enums.CommentStatus;
 import pawtner_core.pawtner_care_api.community.mapper.CommunityPostMapper;
 import pawtner_core.pawtner_care_api.community.repository.CommunityPostCommentRepository;
 import pawtner_core.pawtner_care_api.community.repository.CommunityPostRepository;
-import pawtner_core.pawtner_care_api.dto.PageResponse;
+import pawtner_core.pawtner_care_api.common.dto.PageResponse;
 import pawtner_core.pawtner_care_api.exception.ResourceNotFoundException;
 
 @Service
@@ -160,3 +160,4 @@ public class CommunityPostCommentService {
         }
     }
 }
+

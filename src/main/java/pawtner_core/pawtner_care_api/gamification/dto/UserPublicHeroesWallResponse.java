@@ -11,3 +11,4 @@ public record UserPublicHeroesWallResponse(
     List<UserAchievementResponse> achievements
 ) {
 }
+

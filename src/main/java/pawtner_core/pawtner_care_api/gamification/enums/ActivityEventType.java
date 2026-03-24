@@ -6,3 +6,4 @@ public enum ActivityEventType {
     DONATION_MADE,
     USER_ACTIVE_MONTH
 }
+

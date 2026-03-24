@@ -4,3 +4,4 @@ public enum AchievementAssignmentType {
     AUTO,
     MANUAL
 }
+

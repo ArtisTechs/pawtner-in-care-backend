@@ -61,3 +61,4 @@ public class UserStatsService {
         return increment <= 0 ? 1L : increment;
     }
 }
+

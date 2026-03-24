@@ -111,3 +111,4 @@ public class UserStats {
         this.updatedAt = updatedAt;
     }
 }
+

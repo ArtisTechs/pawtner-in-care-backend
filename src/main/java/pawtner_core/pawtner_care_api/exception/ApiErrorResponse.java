@@ -11,3 +11,4 @@ public record ApiErrorResponse(
     Map<String, String> validationErrors
 ) {
 }
+

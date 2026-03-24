@@ -171,3 +171,4 @@ public class UserAchievement {
         this.updatedAt = updatedAt;
     }
 }
+

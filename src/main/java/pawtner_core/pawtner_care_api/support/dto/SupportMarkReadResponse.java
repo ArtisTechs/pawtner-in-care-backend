@@ -9,3 +9,4 @@ public record SupportMarkReadResponse(
     long unreadCount
 ) {
 }
+

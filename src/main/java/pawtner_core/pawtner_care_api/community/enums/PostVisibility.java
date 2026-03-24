@@ -4,3 +4,4 @@ public enum PostVisibility {
     PUBLIC,
     PRIVATE
 }
+

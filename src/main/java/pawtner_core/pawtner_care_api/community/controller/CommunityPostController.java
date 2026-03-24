@@ -22,7 +22,7 @@ import pawtner_core.pawtner_care_api.community.dto.CommunityPostUpdateRequest;
 import pawtner_core.pawtner_care_api.community.dto.FeedItemResponse;
 import pawtner_core.pawtner_care_api.community.dto.PostResponse;
 import pawtner_core.pawtner_care_api.community.service.CommunityPostService;
-import pawtner_core.pawtner_care_api.dto.PageResponse;
+import pawtner_core.pawtner_care_api.common.dto.PageResponse;
 
 @RestController
 @RequestMapping("/api/community/posts")
@@ -85,3 +85,4 @@ public class CommunityPostController {
         return ResponseEntity.noContent().build();
     }
 }
+

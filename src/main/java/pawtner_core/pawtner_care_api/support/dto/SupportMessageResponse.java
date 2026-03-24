@@ -16,3 +16,4 @@ public record SupportMessageResponse(
     Instant createdAt
 ) {
 }
+

@@ -39,3 +39,4 @@ public class CommunityPostLikeController {
         return ResponseEntity.ok(communityPostLikeService.unlikePost(postId, currentUserId));
     }
 }
+

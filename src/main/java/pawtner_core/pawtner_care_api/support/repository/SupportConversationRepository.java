@@ -17,3 +17,4 @@ public interface SupportConversationRepository extends JpaRepository<SupportConv
         Collection<SupportConversationStatus> statuses
     );
 }
+

@@ -130,3 +130,4 @@ public class SupportConversation {
         updatedAt = Instant.now();
     }
 }
+

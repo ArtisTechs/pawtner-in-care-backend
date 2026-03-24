@@ -20,3 +20,4 @@ public class StreakRuleEvaluator extends AbstractAchievementRuleEvaluator {
         return new RuleProgress(current, target, current >= target);
     }
 }
+

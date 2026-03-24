@@ -16,7 +16,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import pawtner_core.pawtner_care_api.dto.PageResponse;
+import pawtner_core.pawtner_care_api.common.dto.PageResponse;
 import pawtner_core.pawtner_care_api.exception.ResourceNotFoundException;
 import pawtner_core.pawtner_care_api.gamification.dto.AchievementResponse;
 import pawtner_core.pawtner_care_api.gamification.dto.AchievementStatusUpdateRequest;
@@ -403,3 +403,4 @@ public class AchievementService {
         throw new IllegalArgumentException("Either achievementId or achievementCode is required");
     }
 }
+

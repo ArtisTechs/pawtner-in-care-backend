@@ -1,0 +1,12 @@
+package pawtner_core.pawtner_care_api.payment.repository;
+
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
+import pawtner_core.pawtner_care_api.payment.entity.PaymentMode;
+
+public interface PaymentModeRepository extends JpaRepository<PaymentMode, UUID>, JpaSpecificationExecutor<PaymentMode> {
+}
+

@@ -9,3 +9,4 @@ import pawtner_core.pawtner_care_api.community.entity.CommunityPost;
 
 public interface CommunityPostRepository extends JpaRepository<CommunityPost, UUID>, JpaSpecificationExecutor<CommunityPost> {
 }
+

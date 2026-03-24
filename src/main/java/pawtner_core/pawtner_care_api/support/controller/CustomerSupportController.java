@@ -57,3 +57,4 @@ public class CustomerSupportController {
         return supportMessagingService.markCustomerMessagesAsRead(customerUserId);
     }
 }
+

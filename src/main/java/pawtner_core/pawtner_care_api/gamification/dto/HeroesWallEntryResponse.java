@@ -13,3 +13,4 @@ public record HeroesWallEntryResponse(
     Integer rank
 ) {
 }
+

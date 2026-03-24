@@ -34,3 +34,4 @@ build/
 
 ### Local Environment ###
 .env
+.m2/

@@ -64,3 +64,4 @@ public record AchievementUpsertRequest(
     LocalDateTime endAt
 ) {
 }
+

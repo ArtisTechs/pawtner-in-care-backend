@@ -6,3 +6,4 @@ public enum AchievementRuleType {
     STREAK,
     BOOLEAN_ACTION
 }
+

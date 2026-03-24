@@ -11,3 +11,4 @@ public record UserProgressViewResponse(
     List<UserProgressItemResponse> achievements
 ) {
 }
+

@@ -15,3 +15,4 @@ public record SupportConversationResponse(
     Instant updatedAt
 ) {
 }
+

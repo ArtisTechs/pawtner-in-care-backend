@@ -16,11 +16,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import pawtner_core.pawtner_care_api.dto.PageResponse;
+import pawtner_core.pawtner_care_api.dto.UserDetailResponse;
 import pawtner_core.pawtner_care_api.dto.UserRequest;
 import pawtner_core.pawtner_care_api.dto.UserResponse;
 import pawtner_core.pawtner_care_api.entity.User;
 import pawtner_core.pawtner_care_api.enums.UserRole;
 import pawtner_core.pawtner_care_api.exception.ResourceNotFoundException;
+import pawtner_core.pawtner_care_api.gamification.service.AchievementService;
 import pawtner_core.pawtner_care_api.repository.UserRepository;
 
 @Service
@@ -30,10 +32,16 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AchievementService achievementService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(
+        UserRepository userRepository,
+        PasswordEncoder passwordEncoder,
+        AchievementService achievementService
+    ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.achievementService = achievementService;
     }
 
     @Transactional(readOnly = true)
@@ -71,8 +79,9 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserResponse getUser(UUID id) {
-        return toResponse(findUser(id));
+    public UserDetailResponse getUser(UUID id) {
+        User user = findUser(id);
+        return toDetailResponse(user);
     }
 
     @Transactional
@@ -229,6 +238,18 @@ public class UserService {
             user.getLastName(),
             user.getEmail(),
             user.getRole()
+        );
+    }
+
+    private UserDetailResponse toDetailResponse(User user) {
+        return new UserDetailResponse(
+            user.getId(),
+            user.getFirstName(),
+            user.getMiddleName(),
+            user.getLastName(),
+            user.getEmail(),
+            user.getRole(),
+            achievementService.getUserAchievements(user.getId())
         );
     }
 }

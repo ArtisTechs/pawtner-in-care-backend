@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import pawtner_core.pawtner_care_api.dto.PageResponse;
+import pawtner_core.pawtner_care_api.dto.UserDetailResponse;
 import pawtner_core.pawtner_care_api.dto.UserRequest;
 import pawtner_core.pawtner_care_api.dto.UserResponse;
 import pawtner_core.pawtner_care_api.service.UserService;
@@ -48,7 +49,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public UserResponse getUser(@PathVariable UUID id) {
+    public UserDetailResponse getUser(@PathVariable UUID id) {
         return userService.getUser(id);
     }
 

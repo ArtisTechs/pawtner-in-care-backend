@@ -1,0 +1,18 @@
+package pawtner_core.pawtner_care_api.dto;
+
+import java.util.List;
+import java.util.UUID;
+
+import pawtner_core.pawtner_care_api.enums.UserRole;
+import pawtner_core.pawtner_care_api.gamification.dto.UserAchievementResponse;
+
+public record UserDetailResponse(
+    UUID id,
+    String firstName,
+    String middleName,
+    String lastName,
+    String email,
+    UserRole role,
+    List<UserAchievementResponse> achievements
+) {
+}

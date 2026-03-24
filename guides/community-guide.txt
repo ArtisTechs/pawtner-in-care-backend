@@ -1,0 +1,424 @@
+COMMUNITY / SOCIAL FEED GUIDE
+
+Overview
+- The community module is located at:
+  src/main/java/pawtner_core/pawtner_care_api/community
+- It is self-contained and does not require changes to the existing User entity.
+- It links to existing users through userId.
+- IDs use UUID.
+- Media files are not uploaded by this module.
+- Photo and video values are stored only as media URL strings.
+
+What this module includes
+- Community posts
+- Post media URL management
+- Hashtag normalization and linking
+- Post likes
+- Post comments
+- Feed listing with pagination and filtering
+- Sample integration with the existing user module through UserRepository
+
+Main package structure
+- controller
+  CommunityPostController
+  CommunityPostLikeController
+  CommunityPostCommentController
+- dto
+  request/response payloads for posts, media, likes, hashtags, and comments
+- entity
+  CommunityPost
+  CommunityPostMedia
+  Hashtag
+  CommunityPostHashtag
+  CommunityPostLike
+  CommunityPostComment
+- enums
+  PostVisibility
+  PostStatus
+  MediaType
+  CommentStatus
+- mapper
+  CommunityPostMapper
+- repository
+  JPA repositories for posts, media, hashtags, likes, and comments
+- service
+  CommunityPostService
+  CommunityPostLikeService
+  CommunityPostCommentService
+  CommunityHashtagService
+  CommunityUserIntegrationService
+
+Generated database tables
+- community_posts
+- community_post_media
+- hashtags
+- community_post_hashtags
+- community_post_likes
+- community_post_comments
+
+Because the project uses:
+- spring.jpa.hibernate.ddl-auto: update
+
+The tables/columns should be created automatically when the app starts.
+
+Supported enums
+- PostVisibility
+  PUBLIC
+  PRIVATE
+- PostStatus
+  ACTIVE
+  DELETED
+  HIDDEN
+- MediaType
+  IMAGE
+  VIDEO
+- CommentStatus
+  ACTIVE
+  DELETED
+  HIDDEN
+
+Post rules
+- A post must have either content or at least one media item.
+- Content is optional if media exists.
+- Only the post owner can update the post.
+- Only the post owner can delete the post.
+- Post deletion is soft delete.
+- Deleted posts do not appear in the public feed.
+- likeCount and commentCount are stored on the post and updated by service logic.
+
+Media rules
+- mediaUrl is a string only.
+- Supported media types are IMAGE and VIDEO.
+- Multiple media items are allowed per post.
+- Media ordering is preserved through sortOrder.
+- Media upload handling is not included in this module.
+
+Hashtag rules
+- Hashtags are normalized for search and filtering.
+- Examples:
+  #PetCare
+  #petcare
+  petcare
+  all normalize to:
+  petcare
+- Hashtags can come from content and/or explicit request hashtags.
+- Duplicate hashtag relations per post are prevented.
+
+Like rules
+- One like per user per post.
+- Unlike removes the like record.
+- likeCount is synchronized after like and unlike.
+
+Comment rules
+- Comment content is required.
+- Only the comment owner can update the comment.
+- Only the comment owner can delete the comment.
+- Comment deletion is soft delete.
+- commentCount is synchronized after create and delete.
+
+Database constraints and indexes
+- Index on post.userId
+- Index on post.createdAt
+- Composite index on post visibility, status, createdAt
+- Index on comment.postId
+- Index on like.postId
+- Unique constraint on community_post_likes(post_id, user_id)
+- Unique constraint on hashtags(normalized_name)
+- Unique constraint on community_post_hashtags(post_id, hashtag_id)
+
+Current auth integration approach
+- Controllers use:
+  X-User-Id
+  request header
+- This is only a simple integration point for the existing backend.
+- You can replace that with your own security/auth principal extraction later.
+- Ownership validation is handled in the service layer using currentUserId.
+
+Main endpoints
+
+Posts
+- GET /api/community/posts
+  Paginated feed listing
+
+- GET /api/community/posts/{postId}
+  Get single post details
+
+- POST /api/community/posts
+  Create a post
+
+- PUT /api/community/posts/{postId}
+  Update own post
+
+- DELETE /api/community/posts/{postId}
+  Soft delete own post
+
+Likes
+- POST /api/community/posts/{postId}/likes
+  Like a post
+
+- DELETE /api/community/posts/{postId}/likes
+  Unlike a post
+
+Comments
+- GET /api/community/posts/{postId}/comments
+  List comments by post
+
+- POST /api/community/posts/{postId}/comments
+  Create comment
+
+- PUT /api/community/posts/{postId}/comments/{commentId}
+  Update own comment
+
+- DELETE /api/community/posts/{postId}/comments/{commentId}
+  Soft delete own comment
+
+Feed query parameters
+- userId
+- hashtag
+- keyword
+- page
+- size
+- sortBy
+- sortDir
+- ignorePagination
+
+Allowed feed sortBy values
+- createdAt
+- updatedAt
+- likeCount
+- commentCount
+
+Default feed behavior
+- Latest posts first by default
+- Public active posts only
+- Deleted posts are excluded
+- likedByCurrentUser is included when X-User-Id is provided
+
+Get feed examples
+- GET /api/community/posts?page=0&size=10&sortBy=createdAt&sortDir=desc
+- GET /api/community/posts?userId=11111111-1111-1111-1111-111111111111
+- GET /api/community/posts?hashtag=petcare
+- GET /api/community/posts?keyword=adoption
+- GET /api/community/posts?ignorePagination=true
+
+Create post
+Endpoint:
+- POST /api/community/posts
+
+Required header:
+- X-User-Id: 11111111-1111-1111-1111-111111111111
+
+Example request with content and media:
+{
+  "content": "Adopted a new rescue today! #PetCare #Adoption",
+  "hashtags": ["PetCare", "Adoption"],
+  "media": [
+    {
+      "mediaUrl": "https://res.cloudinary.com/demo/image/upload/sample-1.jpg",
+      "mediaType": "IMAGE",
+      "sortOrder": 0
+    },
+    {
+      "mediaUrl": "https://res.cloudinary.com/demo/video/upload/sample-2.mp4",
+      "mediaType": "VIDEO",
+      "sortOrder": 1
+    }
+  ],
+  "visibility": "PUBLIC"
+}
+
+Example request with media only:
+{
+  "content": null,
+  "hashtags": ["DailyWalk"],
+  "media": [
+    {
+      "mediaUrl": "https://res.cloudinary.com/demo/image/upload/sample-3.jpg",
+      "mediaType": "IMAGE",
+      "sortOrder": 0
+    }
+  ],
+  "visibility": "PUBLIC"
+}
+
+Update post
+Endpoint:
+- PUT /api/community/posts/{postId}
+
+Required header:
+- X-User-Id: 11111111-1111-1111-1111-111111111111
+
+Example request:
+{
+  "content": "Updated post content with fresh hashtags #petcare #rescuedog",
+  "hashtags": ["petcare", "rescuedog"],
+  "media": [
+    {
+      "mediaUrl": "https://res.cloudinary.com/demo/image/upload/updated-1.jpg",
+      "mediaType": "IMAGE",
+      "sortOrder": 0
+    }
+  ],
+  "visibility": "PUBLIC"
+}
+
+Update behavior
+- Media list is replaced by the latest submitted list.
+- Hashtag links are resynchronized from content and explicit hashtags.
+- Duplicate normalized hashtags are not linked twice.
+- updatedAt is refreshed automatically.
+
+Delete post
+Endpoint:
+- DELETE /api/community/posts/{postId}
+
+Required header:
+- X-User-Id: 11111111-1111-1111-1111-111111111111
+
+Delete behavior
+- status becomes DELETED
+- deletedAt is set
+- Post is hidden from public feed queries
+- Existing media, likes, and comments remain in the database unless you later add cleanup rules
+
+Like post
+Endpoint:
+- POST /api/community/posts/{postId}/likes
+
+Required header:
+- X-User-Id: 11111111-1111-1111-1111-111111111111
+
+Like behavior
+- Duplicate likes are prevented.
+- The same user can only like once per post.
+- Response includes updated likeCount.
+
+Unlike post
+Endpoint:
+- DELETE /api/community/posts/{postId}/likes
+
+Required header:
+- X-User-Id: 11111111-1111-1111-1111-111111111111
+
+Unlike behavior
+- The like record is removed if it exists.
+- Response includes updated likeCount.
+
+Create comment
+Endpoint:
+- POST /api/community/posts/{postId}/comments
+
+Required header:
+- X-User-Id: 11111111-1111-1111-1111-111111111111
+
+Example request:
+{
+  "content": "This is such a nice update for the community."
+}
+
+Update comment
+Endpoint:
+- PUT /api/community/posts/{postId}/comments/{commentId}
+
+Required header:
+- X-User-Id: 11111111-1111-1111-1111-111111111111
+
+Example request:
+{
+  "content": "Updated comment content."
+}
+
+Delete comment
+Endpoint:
+- DELETE /api/community/posts/{postId}/comments/{commentId}
+
+Required header:
+- X-User-Id: 11111111-1111-1111-1111-111111111111
+
+Comment listing examples
+- GET /api/community/posts/{postId}/comments?page=0&size=10
+- GET /api/community/posts/{postId}/comments?sortDir=asc
+- GET /api/community/posts/{postId}/comments?ignorePagination=true
+
+Response notes
+- Post responses include:
+  postId
+  userId
+  content
+  visibility
+  status
+  likeCount
+  commentCount
+  likedByCurrentUser
+  hashtags
+  media
+  createdAt
+  updatedAt
+- Comment responses include:
+  id
+  postId
+  userId
+  content
+  status
+  createdAt
+  updatedAt
+- Like responses include:
+  postId
+  userId
+  liked
+  likeCount
+
+How hashtag normalization currently works
+- Leading # is removed.
+- Value is trimmed.
+- Value is lowercased.
+- Non-letter, non-number, and non-underscore characters are removed.
+
+Examples
+- "#PetCare" -> "petcare"
+- " Pet_Care " -> "pet_care"
+- "#pet-care!" -> "petcare"
+
+Suggested rollout
+1. Start the app so Hibernate creates the new tables.
+2. Create a post with text only.
+3. Create a post with media only.
+4. Create a post with both content and media.
+5. Test feed listing with hashtag and keyword filters.
+6. Test post update and soft delete.
+7. Test like and unlike flows.
+8. Test comment create, update, delete, and listing.
+9. Replace the X-User-Id header approach with your real auth integration if needed.
+
+Recommended integration points
+
+1. Existing auth/security
+- Replace manual X-User-Id header extraction with current authenticated user id resolution.
+
+2. Existing user validation
+- CommunityUserIntegrationService currently validates user existence through:
+  pawtner_core.pawtner_care_api.repository.UserRepository
+
+3. Future module expansion
+- This structure is ready for:
+  saved posts
+  post reports
+  pinned posts
+  share/repost
+  nested comments
+  moderation
+
+Files to look at first
+- src/main/java/pawtner_core/pawtner_care_api/community/controller/CommunityPostController.java
+- src/main/java/pawtner_core/pawtner_care_api/community/controller/CommunityPostLikeController.java
+- src/main/java/pawtner_core/pawtner_care_api/community/controller/CommunityPostCommentController.java
+- src/main/java/pawtner_core/pawtner_care_api/community/service/CommunityPostService.java
+- src/main/java/pawtner_core/pawtner_care_api/community/service/CommunityPostLikeService.java
+- src/main/java/pawtner_core/pawtner_care_api/community/service/CommunityPostCommentService.java
+- src/main/java/pawtner_core/pawtner_care_api/community/service/CommunityHashtagService.java
+
+Notes
+- Controllers are intentionally thin.
+- Business logic is kept in services.
+- Validation is handled with request DTO annotations and service checks.
+- The module references users by UUID userId and does not tightly couple post entities to the existing User entity.

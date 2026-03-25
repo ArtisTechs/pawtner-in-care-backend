@@ -63,6 +63,12 @@ Allowed purpose values:
 - login
 - reset-password
 
+Signup OTP note:
+- If purpose is `signup`, the request will fail when the email is already registered
+
+Forgot password OTP note:
+- If purpose is `reset-password`, the request will fail when the email is not registered
+
 4. Confirm OTP
 POST /confirm-otp
 Content-Type: application/json

@@ -19,6 +19,7 @@ import pawtner_core.pawtner_care_api.auth.dto.OtpResponse;
 import pawtner_core.pawtner_care_api.auth.dto.OtpSendRequest;
 import pawtner_core.pawtner_care_api.auth.entity.EmailOtp;
 import pawtner_core.pawtner_care_api.auth.repository.EmailOtpRepository;
+import pawtner_core.pawtner_care_api.user.repository.UserRepository;
 
 @Service
 public class OtpService {
@@ -27,16 +28,19 @@ public class OtpService {
 
     private final EmailOtpRepository emailOtpRepository;
     private final BrevoEmailService brevoEmailService;
+    private final UserRepository userRepository;
     private final SecureRandom secureRandom;
     private final long expiryMinutes;
 
     public OtpService(
         EmailOtpRepository emailOtpRepository,
         BrevoEmailService brevoEmailService,
+        UserRepository userRepository,
         @Value("${OTP_EXPIRY_MINUTES:10}") long expiryMinutes
     ) {
         this.emailOtpRepository = emailOtpRepository;
         this.brevoEmailService = brevoEmailService;
+        this.userRepository = userRepository;
         this.secureRandom = new SecureRandom();
         this.expiryMinutes = expiryMinutes;
     }
@@ -45,6 +49,7 @@ public class OtpService {
     public OtpResponse sendOtp(OtpSendRequest request) {
         String normalizedEmail = normalizeEmail(request.email());
         String normalizedPurpose = normalizePurpose(request.purpose());
+        validateSendOtpRequest(normalizedEmail, normalizedPurpose);
         String otpCode = generateOtpCode();
         Instant now = Instant.now();
         Instant expiresAt = now.plus(expiryMinutes, ChronoUnit.MINUTES);
@@ -65,6 +70,16 @@ public class OtpService {
             "OTP sent successfully",
             expiresAt
         );
+    }
+
+    private void validateSendOtpRequest(String email, String purpose) {
+        if ("signup".equals(purpose) && userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("Email is already registered");
+        }
+
+        if ("reset-password".equals(purpose) && !userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("Email is not registered");
+        }
     }
 
     @Transactional

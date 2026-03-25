@@ -75,3 +75,81 @@ DELETE /{id}
 
 Sample:
 DELETE /550e8400-e29b-41d4-a716-446655440000
+
+6. Add Pet To Favorites
+POST /{petId}/favorites
+
+Required headers:
+Authorization: Bearer your-token-here
+X-User-Id: 550e8400-e29b-41d4-a716-446655440001
+
+Sample:
+POST /550e8400-e29b-41d4-a716-446655440000/favorites
+
+Sample response:
+{
+  "petId": "550e8400-e29b-41d4-a716-446655440000",
+  "userId": "550e8400-e29b-41d4-a716-446655440001",
+  "favorited": true
+}
+
+Notes:
+- Favorites are stored per user
+- A user can only favorite the same pet once
+- If the pet is already favorited by the same user, the endpoint still returns favorited: true
+
+7. Remove Pet From Favorites
+DELETE /{petId}/favorites
+
+Required headers:
+Authorization: Bearer your-token-here
+X-User-Id: 550e8400-e29b-41d4-a716-446655440001
+
+Sample:
+DELETE /550e8400-e29b-41d4-a716-446655440000/favorites
+
+Sample response:
+{
+  "petId": "550e8400-e29b-41d4-a716-446655440000",
+  "userId": "550e8400-e29b-41d4-a716-446655440001",
+  "favorited": false
+}
+
+Notes:
+- If the pet is not yet favorited, the endpoint still returns favorited: false
+
+8. Get User Favorite Pets
+GET /api/users/{userId}/favorite-pets
+
+Required headers:
+Authorization: Bearer your-token-here
+
+Sample:
+GET /api/users/550e8400-e29b-41d4-a716-446655440001/favorite-pets
+
+Sample response:
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "Buddy",
+    "gender": "Male",
+    "weight": 12.50,
+    "height": 35.20,
+    "birthDate": "2022-01-10",
+    "age": 4,
+    "adoptionDate": "2023-06-15",
+    "adoptedBy": null,
+    "rescuedDate": "2022-02-01",
+    "description": "Friendly rescued dog",
+    "photo": "https://example.com/photos/buddy.jpg",
+    "videos": "https://example.com/videos/buddy.mp4",
+    "isVaccinated": true,
+    "type": "Dog",
+    "status": "AVAILABLE_FOR_ADOPTION"
+  }
+]
+
+Favorites implementation notes:
+- The backend stores favorites in a dedicated pet_favorites table
+- The table uses a unique constraint on pet_id + user_id
+- Because the project uses spring.jpa.hibernate.ddl-auto=update, the table should be created automatically on app startup

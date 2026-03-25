@@ -87,19 +87,19 @@ public class PetService {
 
         if (ignorePagination) {
             List<PetResponse> content = petRepository.findAll(specification, sort).stream()
-                .map(this::toResponse)
+                .map(this::toPetResponse)
                 .toList();
             return PageResponse.fromList(content, normalizedSortBy, direction.name().toLowerCase(), true);
         }
 
         Pageable pageable = PageRequest.of(safePage, safeSize, sort);
-        Page<PetResponse> responsePage = petRepository.findAll(specification, pageable).map(this::toResponse);
+        Page<PetResponse> responsePage = petRepository.findAll(specification, pageable).map(this::toPetResponse);
         return PageResponse.fromPage(responsePage, normalizedSortBy, direction.name().toLowerCase(), false);
     }
 
     @Transactional(readOnly = true)
     public PetResponse getPet(UUID id) {
-        return toResponse(findPet(id));
+        return toPetResponse(findPetEntity(id));
     }
 
     @Transactional
@@ -109,26 +109,26 @@ public class PetService {
         Pet pet = new Pet();
         applyRequest(pet, request);
 
-        return toResponse(petRepository.save(pet));
+        return toPetResponse(petRepository.save(pet));
     }
 
     @Transactional
     public PetResponse updatePet(UUID id, PetRequest request) {
         validateDates(request);
 
-        Pet pet = findPet(id);
+        Pet pet = findPetEntity(id);
         applyRequest(pet, request);
 
-        return toResponse(petRepository.save(pet));
+        return toPetResponse(petRepository.save(pet));
     }
 
     @Transactional
     public void deletePet(UUID id) {
-        Pet pet = findPet(id);
+        Pet pet = findPetEntity(id);
         petRepository.delete(pet);
     }
 
-    private Pet findPet(UUID id) {
+    public Pet findPetEntity(UUID id) {
         return petRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Pet with id " + id + " was not found"));
     }
@@ -270,7 +270,7 @@ public class PetService {
         return trimmedValue.isEmpty() ? null : trimmedValue;
     }
 
-    private PetResponse toResponse(Pet pet) {
+    public PetResponse toPetResponse(Pet pet) {
         return new PetResponse(
             pet.getId(),
             pet.getName(),
@@ -291,13 +291,17 @@ public class PetService {
         );
     }
 
+    public User findUserEntity(UUID userId) {
+        return userRepository.findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User with id " + userId + " was not found"));
+    }
+
     private User resolveAdoptedBy(UUID adoptedById) {
         if (adoptedById == null) {
             return null;
         }
 
-        return userRepository.findById(adoptedById)
-            .orElseThrow(() -> new ResourceNotFoundException("User with id " + adoptedById + " was not found"));
+        return findUserEntity(adoptedById);
     }
 
     private PetAdopterResponse toAdopterResponse(User user) {

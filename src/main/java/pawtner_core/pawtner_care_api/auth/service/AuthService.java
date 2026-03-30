@@ -42,6 +42,8 @@ public class AuthService {
 
     @Transactional
     public UserResponse signup(SignupRequest request) {
+        otpService.consumeVerifiedSignupOtp(request.email());
+
         UserRequest userRequest = new UserRequest(
             request.firstName(),
             request.middleName(),
@@ -87,7 +89,7 @@ public class AuthService {
         User user = userRepository.findByEmail(normalizedEmail)
             .orElseThrow(() -> new IllegalArgumentException("User with email " + normalizedEmail + " was not found"));
 
-        otpService.consumeVerifiedResetPasswordOtp(normalizedEmail);
+        otpService.consumeResetPasswordOtp(normalizedEmail, request.otp());
 
         user.setPassword(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);

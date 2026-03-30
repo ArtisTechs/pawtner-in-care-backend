@@ -1,6 +1,25 @@
 POSTMAN QUICK GUIDE
 
-1. Sign up a user
+1. Send signup OTP
+POST http://localhost:8080/api/auth/send-otp
+
+Body:
+{
+  "email": "jane@example.com",
+  "purpose": "signup"
+}
+
+2. Confirm signup OTP
+POST http://localhost:8080/api/auth/confirm-otp
+
+Body:
+{
+  "email": "jane@example.com",
+  "otp": "123456",
+  "purpose": "signup"
+}
+
+3. Sign up a user
 POST http://localhost:8080/api/auth/signup
 
 Body:
@@ -12,7 +31,7 @@ Body:
   "password": "Test1234!"
 }
 
-2. Login
+4. Login
 POST http://localhost:8080/api/auth/login
 
 Body:
@@ -21,32 +40,41 @@ Body:
   "password": "Test1234!"
 }
 
-3. Send OTP without token
+5. Forgot password flow
 POST http://localhost:8080/api/auth/send-otp
 
 Body:
 {
   "email": "jane@example.com",
-  "purpose": "signup"
+  "purpose": "reset-password"
 }
 
-4. Confirm OTP without token
 POST http://localhost:8080/api/auth/confirm-otp
 
 Body:
 {
   "email": "jane@example.com",
   "otp": "123456",
-  "purpose": "signup"
+  "purpose": "reset-password"
 }
 
-5. Copy accessToken from login response
+POST http://localhost:8080/api/auth/reset-password
 
-6. Use token on protected endpoints
+Body:
+{
+  "email": "jane@example.com",
+  "otp": "123456",
+  "newPassword": "NewPass123!",
+  "confirmPassword": "NewPass123!"
+}
+
+6. Copy accessToken from login response
+
+7. Use token on protected endpoints
 Header:
 Authorization: Bearer your-token-here
 
-7. Create user with token
+8. Create user with token
 POST http://localhost:8080/api/users
 
 Body:
@@ -59,5 +87,5 @@ Body:
   "role": "USER"
 }
 
-8. Get paginated users
+9. Get paginated users
 GET http://localhost:8080/api/users?page=0&size=10&sortBy=id&sortDir=asc

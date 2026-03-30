@@ -73,9 +73,7 @@ public class OtpService {
     }
 
     private void validateSendOtpRequest(String email, String purpose) {
-        if ("signup".equals(purpose) && userRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("Email is already registered");
-        }
+        validateEmailAvailabilityForSignup(email, purpose);
 
         if ("reset-password".equals(purpose) && !userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("Email is not registered");
@@ -86,15 +84,12 @@ public class OtpService {
     public OtpResponse confirmOtp(OtpConfirmRequest request) {
         String normalizedEmail = normalizeEmail(request.email());
         String normalizedPurpose = normalizePurpose(request.purpose());
+        validateEmailAvailabilityForSignup(normalizedEmail, normalizedPurpose);
         EmailOtp emailOtp = findLatestOtp(normalizedEmail, normalizedPurpose);
         validateOtpCanBeUsed(emailOtp);
         validateOtpCode(emailOtp, request.otp());
 
-        Instant now = Instant.now();
-        emailOtp.setVerifiedAt(now);
-        if (!"reset-password".equals(normalizedPurpose)) {
-            emailOtp.setConsumedAt(now);
-        }
+        emailOtp.setVerifiedAt(Instant.now());
         emailOtpRepository.save(emailOtp);
 
         return new OtpResponse(
@@ -118,6 +113,37 @@ public class OtpService {
         emailOtpRepository.save(emailOtp);
     }
 
+    @Transactional
+    public void consumeResetPasswordOtp(String email, String otp) {
+        String normalizedEmail = normalizeEmail(email);
+        EmailOtp emailOtp = findLatestOtp(normalizedEmail, "reset-password");
+        validateOtpCanBeUsed(emailOtp);
+        validateOtpCode(emailOtp, otp);
+
+        if (emailOtp.getVerifiedAt() == null) {
+            throw new IllegalArgumentException("Reset password OTP has not been verified yet");
+        }
+
+        emailOtp.setConsumedAt(Instant.now());
+        emailOtpRepository.save(emailOtp);
+    }
+
+    @Transactional
+    public void consumeVerifiedSignupOtp(String email) {
+        String normalizedEmail = normalizeEmail(email);
+        validateEmailAvailabilityForSignup(normalizedEmail, "signup");
+
+        EmailOtp emailOtp = findLatestOtp(normalizedEmail, "signup");
+        validateOtpCanBeUsed(emailOtp);
+
+        if (emailOtp.getVerifiedAt() == null) {
+            throw new IllegalArgumentException("Signup OTP has not been verified yet");
+        }
+
+        emailOtp.setConsumedAt(Instant.now());
+        emailOtpRepository.save(emailOtp);
+    }
+
     private String normalizeEmail(String email) {
         return email.trim().toLowerCase(Locale.ROOT);
     }
@@ -128,6 +154,12 @@ public class OtpService {
             throw new IllegalArgumentException("Unsupported OTP purpose: " + normalizedPurpose);
         }
         return normalizedPurpose;
+    }
+
+    private void validateEmailAvailabilityForSignup(String email, String purpose) {
+        if ("signup".equals(purpose) && userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("Email is already registered");
+        }
     }
 
     private EmailOtp findLatestOtp(String email, String purpose) {

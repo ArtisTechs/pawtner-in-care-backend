@@ -7,6 +7,18 @@ http://localhost:8080/api/auth
 POST /signup
 Content-Type: application/json
 
+Important:
+- Before calling `/signup`, you must complete OTP verification with purpose `signup`
+- `/signup` only works after the latest signup OTP has already been verified
+- `/signup` consumes the verified signup OTP during account creation
+- `/signup` will fail if the email is already registered
+
+Recommended flow:
+1. Call `POST /send-otp` with purpose `signup`
+2. Check the email inbox for the 6-digit OTP
+3. Call `POST /confirm-otp` with the email, OTP, and purpose `signup`
+4. Call `POST /signup` with the same email and account details
+
 Sample body:
 {
   "firstName": "Jane",
@@ -20,6 +32,7 @@ Notes:
 - Role defaults to USER
 - User ID is auto-generated as UUID
 - Email must be unique
+- The signup email must match the verified signup OTP email
 
 2. Login
 POST /login
@@ -83,6 +96,12 @@ Sample body:
   "purpose": "signup"
 }
 
+Notes:
+- For purpose `signup`, confirming the OTP marks it as verified
+- The verified signup OTP is consumed later by `/signup`
+- For purpose `reset-password`, confirming the OTP marks it as verified
+- The verified reset-password OTP is consumed later by `/reset-password`
+
 5. Reset Password
 POST /reset-password
 Content-Type: application/json
@@ -94,17 +113,19 @@ Important:
 - Use purpose `reset-password` when requesting the OTP
 - You must call `/confirm-otp` first with purpose `reset-password`
 - `/reset-password` only works after the latest reset-password OTP has already been verified
+- `/reset-password` must include the same 6-digit OTP from the email
 - `/reset-password` consumes the verified OTP after the password is changed
 
 Recommended flow:
 1. Call `POST /send-otp` with purpose `reset-password`
 2. Check the email inbox for the 6-digit OTP
 3. Call `POST /confirm-otp` with the email, OTP, and purpose `reset-password`
-4. Call `POST /reset-password` with the email and new password
+4. Call `POST /reset-password` with the email, OTP, and new password
 
 Sample body:
 {
   "email": "jane@example.com",
+  "otp": "123456",
   "newPassword": "NewPass123!",
   "confirmPassword": "NewPass123!"
 }

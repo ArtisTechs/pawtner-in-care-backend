@@ -10,6 +10,10 @@ public record ResetPasswordRequest(
     @Email(message = "Email must be valid")
     String email,
 
+    @NotBlank(message = "OTP is required")
+    @Pattern(regexp = "\\d{6}", message = "OTP must be a 6-digit code")
+    String otp,
+
     @NotBlank(message = "New password is required")
     @Size(min = 8, max = 255, message = "New password must be between 8 and 255 characters")
     @Pattern(

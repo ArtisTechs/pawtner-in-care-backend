@@ -12,6 +12,7 @@ public record UserDetailResponse(
     String middleName,
     String lastName,
     String email,
+    String profilePicture,
     UserRole role,
     List<UserAchievementResponse> achievements
 ) {

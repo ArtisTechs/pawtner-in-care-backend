@@ -22,6 +22,9 @@ public record SignupRequest(
     @Size(max = 255, message = "Email must not exceed 255 characters")
     String email,
 
+    @Size(max = 500, message = "Profile picture must not exceed 500 characters")
+    String profilePicture,
+
     @NotBlank(message = "Password is required")
     @Size(min = 8, max = 255, message = "Password must be between 8 and 255 characters")
     @Pattern(

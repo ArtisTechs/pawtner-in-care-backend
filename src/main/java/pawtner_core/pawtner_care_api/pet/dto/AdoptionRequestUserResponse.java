@@ -7,6 +7,7 @@ public record AdoptionRequestUserResponse(
     String firstName,
     String middleName,
     String lastName,
-    String email
+    String email,
+    String profilePicture
 ) {
 }

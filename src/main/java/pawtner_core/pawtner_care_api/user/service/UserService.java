@@ -28,7 +28,7 @@ import pawtner_core.pawtner_care_api.user.repository.UserRepository;
 @Service
 public class UserService {
 
-    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("id", "firstName", "middleName", "lastName", "email");
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("id", "firstName", "middleName", "lastName", "email", "profilePicture");
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -51,6 +51,7 @@ public class UserService {
         String middleName,
         String lastName,
         String email,
+        String profilePicture,
         int page,
         int size,
         String sortBy,
@@ -62,7 +63,7 @@ public class UserService {
         String normalizedSortBy = normalizeSortBy(sortBy);
         Sort.Direction direction = normalizeSortDirection(sortDir);
         Sort sort = Sort.by(direction, normalizedSortBy);
-        Specification<User> specification = buildUserSpecification(search, firstName, middleName, lastName, email);
+        Specification<User> specification = buildUserSpecification(search, firstName, middleName, lastName, email, profilePicture);
 
         if (ignorePagination) {
             List<UserResponse> content = userRepository.findAll(specification, sort).stream()
@@ -124,7 +125,8 @@ public class UserService {
         String firstName,
         String middleName,
         String lastName,
-        String email
+        String email,
+        String profilePicture
     ) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new java.util.ArrayList<>();
@@ -133,6 +135,7 @@ public class UserService {
             addLikePredicate(predicates, criteriaBuilder, root.get("middleName"), middleName);
             addLikePredicate(predicates, criteriaBuilder, root.get("lastName"), lastName);
             addLikePredicate(predicates, criteriaBuilder, root.get("email"), email);
+            addLikePredicate(predicates, criteriaBuilder, root.get("profilePicture"), profilePicture);
 
             String normalizedSearch = normalizeFilter(search);
             if (normalizedSearch != null) {
@@ -142,7 +145,8 @@ public class UserService {
                         criteriaBuilder.like(criteriaBuilder.lower(root.get("firstName")), pattern),
                         criteriaBuilder.like(criteriaBuilder.lower(root.get("middleName")), pattern),
                         criteriaBuilder.like(criteriaBuilder.lower(root.get("lastName")), pattern),
-                        criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), pattern)
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), pattern),
+                        criteriaBuilder.like(criteriaBuilder.lower(root.get("profilePicture")), pattern)
                     )
                 );
             }
@@ -209,6 +213,7 @@ public class UserService {
         user.setMiddleName(normalizeOptionalText(request.middleName()));
         user.setLastName(request.lastName().trim());
         user.setEmail(normalizedEmail);
+        user.setProfilePicture(normalizeOptionalText(request.profilePicture()));
         user.setPassword(passwordEncoder.encode(request.password().trim()));
         user.setRole(resolveRole(request.role()));
     }
@@ -237,6 +242,7 @@ public class UserService {
             user.getMiddleName(),
             user.getLastName(),
             user.getEmail(),
+            user.getProfilePicture(),
             user.getRole()
         );
     }
@@ -248,6 +254,7 @@ public class UserService {
             user.getMiddleName(),
             user.getLastName(),
             user.getEmail(),
+            user.getProfilePicture(),
             user.getRole(),
             achievementService.getUserAchievements(user.getId())
         );

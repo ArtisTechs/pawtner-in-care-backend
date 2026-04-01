@@ -19,6 +19,7 @@ Sample body:
   "middleName": "System",
   "lastName": "User",
   "email": "admin@example.com",
+  "profilePicture": "https://example.com/profiles/admin.jpg",
   "password": "Admin1234!",
   "role": "ADMIN"
 }
@@ -26,6 +27,7 @@ Sample body:
 Notes:
 - If role is omitted, default is USER
 - ID is auto-generated as UUID
+- profilePicture is optional and stored as a string
 
 2. Get User List
 GET /
@@ -36,6 +38,7 @@ Available query params:
 - middleName
 - lastName
 - email
+- profilePicture
 - page
 - size
 - sortBy
@@ -50,6 +53,7 @@ Allowed sortBy values:
 - middleName
 - lastName
 - email
+- profilePicture
 
 Allowed sortDir values:
 - asc
@@ -71,6 +75,7 @@ Sample body:
   "middleName": "Anne",
   "lastName": "Doe",
   "email": "jane.doe@example.com",
+  "profilePicture": "https://example.com/profiles/jane.jpg",
   "password": "NewPass123!",
   "role": "USER"
 }

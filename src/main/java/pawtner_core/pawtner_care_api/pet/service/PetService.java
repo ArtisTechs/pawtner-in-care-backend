@@ -317,7 +317,8 @@ public class PetService {
             user.getFirstName(),
             user.getMiddleName(),
             user.getLastName(),
-            user.getEmail()
+            user.getEmail(),
+            user.getProfilePicture()
         );
     }
 

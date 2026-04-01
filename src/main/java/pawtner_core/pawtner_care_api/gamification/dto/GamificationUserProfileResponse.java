@@ -5,7 +5,8 @@ import java.util.UUID;
 public record GamificationUserProfileResponse(
     UUID userId,
     String displayName,
-    String email
+    String email,
+    String profilePicture
 ) {
 }
 

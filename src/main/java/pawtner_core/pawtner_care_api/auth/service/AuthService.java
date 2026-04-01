@@ -48,6 +48,7 @@ public class AuthService {
             request.middleName(),
             request.lastName(),
             request.email(),
+            request.profilePicture(),
             request.password(),
             UserRole.USER
         );
@@ -77,6 +78,7 @@ public class AuthService {
                 user.getMiddleName(),
                 user.getLastName(),
                 user.getEmail(),
+                user.getProfilePicture(),
                 user.getRole()
             )
         );

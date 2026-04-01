@@ -25,6 +25,7 @@ Sample body:
   "middleName": "Marie",
   "lastName": "Doe",
   "email": "jane@example.com",
+  "profilePicture": "https://example.com/profiles/jane.jpg",
   "password": "Test1234!"
 }
 
@@ -33,6 +34,7 @@ Notes:
 - User ID is auto-generated as UUID
 - Email must be unique
 - The signup email must match the verified signup OTP email
+- profilePicture is optional and stored as a string
 
 2. Login
 POST /login
@@ -54,6 +56,7 @@ Sample success response:
     "middleName": "Marie",
     "lastName": "Doe",
     "email": "jane@example.com",
+    "profilePicture": "https://example.com/profiles/jane.jpg",
     "role": "USER"
   }
 }

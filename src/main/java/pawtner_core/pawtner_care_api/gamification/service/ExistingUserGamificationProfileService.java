@@ -24,7 +24,7 @@ public class ExistingUserGamificationProfileService implements GamificationUserP
             .orElseThrow(() -> new ResourceNotFoundException("User with id " + userId + " was not found"));
 
         String displayName = (user.getFirstName() + " " + user.getLastName()).trim();
-        return new GamificationUserProfileResponse(user.getId(), displayName, user.getEmail());
+        return new GamificationUserProfileResponse(user.getId(), displayName, user.getEmail(), user.getProfilePicture());
     }
 }
 

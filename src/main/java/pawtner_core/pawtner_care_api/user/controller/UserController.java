@@ -39,13 +39,14 @@ public class UserController {
         @RequestParam(required = false) String middleName,
         @RequestParam(required = false) String lastName,
         @RequestParam(required = false) String email,
+        @RequestParam(required = false) String profilePicture,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(defaultValue = "id") String sortBy,
         @RequestParam(defaultValue = "asc") String sortDir,
         @RequestParam(defaultValue = "true") boolean ignorePagination
     ) {
-        return userService.getUsers(search, firstName, middleName, lastName, email, page, size, sortBy, sortDir, ignorePagination);
+        return userService.getUsers(search, firstName, middleName, lastName, email, profilePicture, page, size, sortBy, sortDir, ignorePagination);
     }
 
     @GetMapping("/{id}")

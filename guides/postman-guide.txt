@@ -28,6 +28,7 @@ Body:
   "middleName": "Marie",
   "lastName": "Doe",
   "email": "jane@example.com",
+  "profilePicture": "https://example.com/profiles/jane.jpg",
   "password": "Test1234!"
 }
 
@@ -83,6 +84,7 @@ Body:
   "middleName": "M",
   "lastName": "Smith",
   "email": "john@example.com",
+  "profilePicture": "https://example.com/profiles/john.jpg",
   "password": "Test1234!",
   "role": "USER"
 }

@@ -27,6 +27,7 @@ Sample body:
   "videos": "https://example.com/videos/buddy.mp4",
   "isVaccinated": true,
   "type": "Dog",
+  "race": "Golden Retriever",
   "status": "AVAILABLE_FOR_ADOPTION"
 }
 
@@ -34,6 +35,7 @@ Notes:
 - ID is auto-generated as UUID
 - Age is auto-computed from birthDate
 - Required fields: name, gender, type, status
+- Optional fields include race, description, photo, videos, and vaccination details
 - Allowed status values:
   RESCUED
   ADOPTED
@@ -67,6 +69,7 @@ Sample body:
   "videos": "https://example.com/videos/buddy-new.mp4",
   "isVaccinated": true,
   "type": "Dog",
+  "race": "Golden Retriever",
   "status": "ADOPTED"
 }
 
@@ -145,6 +148,7 @@ Sample response:
     "videos": "https://example.com/videos/buddy.mp4",
     "isVaccinated": true,
     "type": "Dog",
+    "race": "Golden Retriever",
     "status": "AVAILABLE_FOR_ADOPTION"
   }
 ]

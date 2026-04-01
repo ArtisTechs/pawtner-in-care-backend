@@ -57,6 +57,9 @@ public record PetRequest(
     @Size(max = 50, message = "Type must not exceed 50 characters")
     String type,
 
+    @Size(max = 100, message = "Race must not exceed 100 characters")
+    String race,
+
     @NotNull(message = "Status is required")
     PetStatus status
 ) {

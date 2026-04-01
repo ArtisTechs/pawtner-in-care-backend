@@ -66,6 +66,9 @@ public class Pet {
     @Column(nullable = false, length = 50)
     private String type;
 
+    @Column(length = 100)
+    private String race;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private PetStatus status;
@@ -176,6 +179,14 @@ public class Pet {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getRace() {
+        return race;
+    }
+
+    public void setRace(String race) {
+        this.race = race;
     }
 
     public PetStatus getStatus() {

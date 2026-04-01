@@ -183,12 +183,15 @@ Required values include:
 - `DB_URL`
 - `DB_USERNAME`
 - `DB_PASSWORD`
-- `API_BEARER_TOKEN`
 
 Optional JPA settings:
 
 - `SPRING_JPA_HIBERNATE_DDL_AUTO`
 - `SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL`
+
+Optional auth settings:
+
+- `APP_AUTH_TOKEN_TTL_HOURS`
 
 ## Running Locally
 
@@ -208,7 +211,7 @@ On Windows PowerShell:
 
 ## Development Notes
 
-- The API is stateless and uses a custom bearer token authentication filter.
+- The API is stateless and issues a unique bearer token on each successful login.
 - Most business modules follow a standard Spring structure: `controller`, `service`, `repository`, `dto`, and `entity`.
 - Real-time support messaging is implemented with STOMP over WebSocket.
 

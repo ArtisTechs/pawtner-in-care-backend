@@ -197,6 +197,7 @@ public class PetService {
         pet.setVideos(normalizeOptionalText(request.videos()));
         pet.setIsVaccinated(request.isVaccinated());
         pet.setType(request.type().trim());
+        pet.setRace(normalizeOptionalText(request.race()));
         pet.setStatus(request.status());
     }
 
@@ -287,6 +288,7 @@ public class PetService {
             pet.getVideos(),
             pet.getIsVaccinated(),
             pet.getType(),
+            pet.getRace(),
             pet.getStatus()
         );
     }

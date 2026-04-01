@@ -72,7 +72,7 @@ Body:
 
 7. Use token on protected endpoints
 Header:
-Authorization: Bearer your-token-here
+Authorization: Bearer {{accessToken}}
 
 8. Create user with token
 POST http://localhost:8080/api/users

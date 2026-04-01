@@ -22,6 +22,7 @@ public record PetResponse(
     String videos,
     Boolean isVaccinated,
     String type,
+    String race,
     PetStatus status
 ) {
 }

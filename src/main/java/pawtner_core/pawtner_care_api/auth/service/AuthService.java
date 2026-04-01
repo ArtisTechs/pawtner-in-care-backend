@@ -1,6 +1,5 @@
 package pawtner_core.pawtner_care_api.auth.service;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,20 +22,20 @@ public class AuthService {
     private final UserService userService;
     private final UserRepository userRepository;
     private final OtpService otpService;
-    private final String apiBearerToken;
+    private final AuthTokenService authTokenService;
     private final PasswordEncoder passwordEncoder;
 
     public AuthService(
         UserService userService,
         UserRepository userRepository,
         OtpService otpService,
-        @Value("${API_BEARER_TOKEN}") String apiBearerToken,
+        AuthTokenService authTokenService,
         PasswordEncoder passwordEncoder
     ) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.otpService = otpService;
-        this.apiBearerToken = apiBearerToken;
+        this.authTokenService = authTokenService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -67,9 +66,11 @@ public class AuthService {
             throw new IllegalArgumentException("Invalid email or password");
         }
 
+        String accessToken = authTokenService.issueToken(user);
+
         return new AuthResponse(
             "Bearer",
-            apiBearerToken,
+            accessToken,
             new UserResponse(
                 user.getId(),
                 user.getFirstName(),

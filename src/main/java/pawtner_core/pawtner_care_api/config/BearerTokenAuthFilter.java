@@ -8,7 +8,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,22 +18,29 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import pawtner_core.pawtner_care_api.auth.service.AuthTokenService;
+
 @Component
 public class BearerTokenAuthFilter extends OncePerRequestFilter {
 
     private static final String BEARER_PREFIX = "Bearer ";
-    private static final String PROTECTED_USERS_PATTERN = "/api/users/**";
 
-    private final String expectedToken;
+    private final AuthTokenService authTokenService;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
-    public BearerTokenAuthFilter(@Value("${API_BEARER_TOKEN}") String expectedToken) {
-        this.expectedToken = expectedToken;
+    public BearerTokenAuthFilter(AuthTokenService authTokenService) {
+        this.authTokenService = authTokenService;
     }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !pathMatcher.match(PROTECTED_USERS_PATTERN, request.getRequestURI());
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            return true;
+        }
+
+        String requestUri = request.getRequestURI();
+        return pathMatcher.match("/api/auth/**", requestUri)
+            || pathMatcher.match("/ws/**", requestUri);
     }
 
     @Override
@@ -51,7 +57,7 @@ public class BearerTokenAuthFilter extends OncePerRequestFilter {
         }
 
         String providedToken = authorizationHeader.substring(BEARER_PREFIX.length()).trim();
-        if (!expectedToken.equals(providedToken)) {
+        if (!authTokenService.isValid(providedToken)) {
             writeUnauthorizedResponse(response, "Invalid bearer token");
             return;
         }

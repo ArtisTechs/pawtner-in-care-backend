@@ -33,7 +33,7 @@ Sample body:
 
 Notes:
 - ID is auto-generated as UUID
-- Age is auto-computed from birthDate
+- Age is auto-computed from birthDate and returned as years with month decimals
 - Required fields: name, gender, type, status
 - Optional fields include race, description, photo, videos, and vaccination details
 - Allowed status values:
@@ -139,7 +139,7 @@ Sample response:
     "weight": 12.50,
     "height": 35.20,
     "birthDate": "2022-01-10",
-    "age": 4,
+    "age": 4.17,
     "adoptionDate": "2023-06-15",
     "adoptedBy": null,
     "rescuedDate": "2022-02-01",

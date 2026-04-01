@@ -13,7 +13,7 @@ public record PetResponse(
     BigDecimal weight,
     BigDecimal height,
     LocalDate birthDate,
-    Integer age,
+    BigDecimal age,
     LocalDate adoptionDate,
     PetAdopterResponse adoptedBy,
     LocalDate rescuedDate,

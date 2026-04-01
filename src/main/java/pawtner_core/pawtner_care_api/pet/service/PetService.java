@@ -1,6 +1,7 @@
 package pawtner_core.pawtner_care_api.pet.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
@@ -320,12 +321,17 @@ public class PetService {
         );
     }
 
-    private Integer calculateAge(LocalDate birthDate) {
+    private BigDecimal calculateAge(LocalDate birthDate) {
         if (birthDate == null) {
             return null;
         }
 
-        return Period.between(birthDate, LocalDate.now()).getYears();
+        Period period = Period.between(birthDate, LocalDate.now());
+        BigDecimal years = BigDecimal.valueOf(period.getYears());
+        BigDecimal monthFraction = BigDecimal.valueOf(period.getMonths())
+            .divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP);
+
+        return years.add(monthFraction);
     }
 }
 

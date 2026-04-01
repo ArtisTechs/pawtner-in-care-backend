@@ -43,6 +43,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/users/**").authenticated()
                 .requestMatchers("/api/pets/**").authenticated()
+                .requestMatchers("/api/adoption-requests/**").authenticated()
                 .requestMatchers("/api/events/**").authenticated()
                 .requestMatchers("/api/donation-campaigns/**").authenticated()
                 .requestMatchers("/api/payment-modes/**").authenticated()

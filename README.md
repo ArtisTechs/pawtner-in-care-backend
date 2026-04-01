@@ -56,12 +56,16 @@ Main routes:
 - Support pet listing workflows for the platform
 - Let users favorite or unfavorite pets
 - Retrieve a user's saved pets
+- Submit and review adoption requests for adoptable pets
 
 Main routes:
 
 - `/api/pets`
 - `/api/pets/{id}`
 - `/api/pets/{petId}/favorites`
+- `/api/pets/{petId}/adoption-requests`
+- `/api/adoption-requests/{requestId}/status`
+- `/api/users/{userId}/adoption-requests`
 - `/api/users/{userId}/favorite-pets`
 
 ### Events
@@ -214,12 +218,13 @@ On Windows PowerShell:
 - The API is stateless and issues a unique bearer token on each successful login.
 - Most business modules follow a standard Spring structure: `controller`, `service`, `repository`, `dto`, and `entity`.
 - Real-time support messaging is implemented with STOMP over WebSocket.
+- Endpoint usage guides are available under the `guides/` directory, including `guides/adoption-request-guide.txt`.
 
 ## Package Overview
 
 - `auth` - login, signup, OTP, password reset
 - `user` - user records and profile-related operations
-- `pet` - pet records and favorites
+- `pet` - pet records, favorites, and adoption requests
 - `event` - event management
 - `donation` - campaigns and donation transactions
 - `payment` - payment mode management

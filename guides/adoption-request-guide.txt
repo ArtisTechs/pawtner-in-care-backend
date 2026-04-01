@@ -1,0 +1,171 @@
+ADOPTION REQUEST GUIDE
+
+Overview
+- This guide covers the adoption request flow for pets.
+- The feature is located in the `pet` module.
+- It adds a request/approval lifecycle on top of existing pet records.
+- Authentication is required for all adoption request endpoints.
+- User-scoped actions use the `X-User-Id` header, following the existing project pattern.
+
+Main endpoints
+- POST /api/pets/{petId}/adoption-requests
+- GET /api/pets/{petId}/adoption-requests
+- GET /api/users/{userId}/adoption-requests
+- PATCH /api/adoption-requests/{requestId}/status
+
+Authorization
+- Bearer token required
+
+Required headers
+- Authorization: Bearer your-token-here
+- X-User-Id: 550e8400-e29b-41d4-a716-446655440001
+
+Status values
+- PENDING
+- APPROVED
+- REJECTED
+- CANCELLED
+
+Pet status interaction
+- If a request is created for a pet with `AVAILABLE_FOR_ADOPTION`, the pet moves to `ONGOING_ADOPTION`.
+- If a request is approved, the pet moves to `ADOPTED`.
+- When approved, `adoptedBy` is set to the requester and `adoptionDate` is set automatically.
+- If all pending requests are rejected or cancelled and the pet is not adopted, the pet returns to `AVAILABLE_FOR_ADOPTION`.
+
+Approval rules
+- A user can create their own adoption request.
+- A user can cancel their own pending request by updating status to `CANCELLED`.
+- Only `ADMIN` users can approve or reject requests.
+- Only `PENDING` requests can be updated.
+- Duplicate pending requests for the same pet and same user are blocked.
+- If one request is approved, other pending requests for that pet are auto-rejected.
+
+1. Create Adoption Request
+Endpoint:
+- POST /api/pets/{petId}/adoption-requests
+
+Required headers:
+- Authorization: Bearer your-token-here
+- X-User-Id: 550e8400-e29b-41d4-a716-446655440001
+
+Example:
+- POST /api/pets/550e8400-e29b-41d4-a716-446655440000/adoption-requests
+
+Sample body:
+{
+  "message": "I have experience caring for rescued dogs and can provide a safe home."
+}
+
+Sample response:
+{
+  "id": "660e8400-e29b-41d4-a716-446655440000",
+  "pet": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "Buddy",
+    "type": "Dog",
+    "race": "Golden Retriever",
+    "status": "ONGOING_ADOPTION",
+    "photo": "https://example.com/photos/buddy.jpg"
+  },
+  "requester": {
+    "id": "550e8400-e29b-41d4-a716-446655440001",
+    "firstName": "Jane",
+    "middleName": null,
+    "lastName": "Doe",
+    "email": "jane@example.com"
+  },
+  "status": "PENDING",
+  "message": "I have experience caring for rescued dogs and can provide a safe home.",
+  "reviewNotes": null,
+  "reviewedAt": null,
+  "createdAt": "2026-04-01T20:30:00",
+  "updatedAt": "2026-04-01T20:30:00"
+}
+
+Validation notes
+- The message is optional.
+- The message can be up to 1000 characters.
+- You cannot create a request for a pet that is already `ADOPTED`.
+- You cannot create a second pending request for the same pet.
+
+2. Get Adoption Requests For A Pet
+Endpoint:
+- GET /api/pets/{petId}/adoption-requests
+
+Required headers:
+- Authorization: Bearer your-token-here
+
+Example:
+- GET /api/pets/550e8400-e29b-41d4-a716-446655440000/adoption-requests
+
+Use case
+- Useful for admin review screens
+- Useful for shelter-side adoption management
+
+3. Get Adoption Requests By User
+Endpoint:
+- GET /api/users/{userId}/adoption-requests
+
+Required headers:
+- Authorization: Bearer your-token-here
+
+Example:
+- GET /api/users/550e8400-e29b-41d4-a716-446655440001/adoption-requests
+
+Use case
+- Useful for "My Adoption Requests" in the app
+
+4. Update Adoption Request Status
+Endpoint:
+- PATCH /api/adoption-requests/{requestId}/status
+
+Required headers:
+- Authorization: Bearer your-token-here
+- X-User-Id: 550e8400-e29b-41d4-a716-446655440002
+
+Approve example body:
+{
+  "status": "APPROVED",
+  "reviewNotes": "Approved after profile review and verification."
+}
+
+Reject example body:
+{
+  "status": "REJECTED",
+  "reviewNotes": "Pet was matched with another applicant."
+}
+
+Cancel example body:
+{
+  "status": "CANCELLED",
+  "reviewNotes": "No longer able to proceed at this time."
+}
+
+Important rules
+- `APPROVED` and `REJECTED` are for admin users only.
+- `CANCELLED` is for the requester of that adoption request.
+- `PENDING` is not a valid update target.
+
+Gamification integration
+- When an adoption request is approved, the backend triggers the `PET_ADOPTED` gamification event for the requester.
+
+Database notes
+- Adoption requests are stored in a dedicated `adoption_requests` table.
+- The table uses a unique constraint on `pet_id + requester_id`.
+- Because the project uses `spring.jpa.hibernate.ddl-auto=update`, the table should be created automatically on app startup.
+
+Suggested test flow
+1. Create a pet with status `AVAILABLE_FOR_ADOPTION`.
+2. Submit an adoption request as a normal user.
+3. Confirm the pet status changes to `ONGOING_ADOPTION`.
+4. Fetch requests by pet and by user.
+5. Approve the request as an admin user.
+6. Confirm the pet status changes to `ADOPTED`.
+7. Confirm the pet `adoptedBy` and `adoptionDate` are populated.
+
+Files to look at first
+- src/main/java/pawtner_core/pawtner_care_api/pet/controller/AdoptionRequestController.java
+- src/main/java/pawtner_core/pawtner_care_api/pet/service/AdoptionRequestService.java
+- src/main/java/pawtner_core/pawtner_care_api/pet/repository/AdoptionRequestRepository.java
+- src/main/java/pawtner_core/pawtner_care_api/pet/entity/AdoptionRequest.java
+- src/main/java/pawtner_core/pawtner_care_api/pet/enums/AdoptionRequestStatus.java

@@ -1,6 +1,7 @@
 package pawtner_core.pawtner_care_api.pet.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -16,8 +17,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.web.server.ResponseStatusException;
 
+import pawtner_core.pawtner_care_api.common.dto.PageResponse;
 import pawtner_core.pawtner_care_api.gamification.service.GamificationIntegrationService;
 import pawtner_core.pawtner_care_api.pet.dto.AdoptionRequestCreateRequest;
 import pawtner_core.pawtner_care_api.pet.dto.AdoptionRequestResponse;
@@ -58,10 +61,14 @@ class AdoptionRequestServiceTest {
 
         when(petService.findPetEntity(petId)).thenReturn(pet);
         when(petService.findUserEntity(requesterId)).thenReturn(requester);
+        when(adoptionRequestRepository.findAllByOrderByCreatedAtAsc()).thenReturn(List.of());
         when(adoptionRequestRepository.existsByPetIdAndRequesterIdAndStatus(petId, requesterId, AdoptionRequestStatus.PENDING))
             .thenReturn(false);
         when(adoptionRequestRepository.findByPetIdAndRequesterId(petId, requesterId)).thenReturn(Optional.empty());
-        when(adoptionRequestRepository.save(any(AdoptionRequest.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(adoptionRequestRepository.save(any(AdoptionRequest.class))).thenAnswer(invocation -> {
+            AdoptionRequest savedRequest = invocation.getArgument(0);
+            return savedRequest;
+        });
 
         AdoptionRequestResponse response = adoptionRequestService.createRequest(
             petId,
@@ -70,6 +77,8 @@ class AdoptionRequestServiceTest {
         );
 
         assertEquals(AdoptionRequestStatus.PENDING, response.status());
+        assertNotNull(response.requestNumber());
+        assertEquals("000001", response.requestNumber());
         assertEquals(PetStatus.ONGOING_ADOPTION, pet.getStatus());
         verify(petRepository).save(pet);
     }
@@ -90,7 +99,9 @@ class AdoptionRequestServiceTest {
         adoptionRequest.setPet(pet);
         adoptionRequest.setRequester(requester);
         adoptionRequest.setStatus(AdoptionRequestStatus.PENDING);
+        adoptionRequest.setRequestNumber("000001");
 
+        when(adoptionRequestRepository.findAllByOrderByCreatedAtAsc()).thenReturn(List.of(adoptionRequest));
         when(adoptionRequestRepository.findById(requestId)).thenReturn(Optional.of(adoptionRequest));
         when(petService.findUserEntity(adminId)).thenReturn(admin);
         when(adoptionRequestRepository.findByPetIdAndStatus(petId, AdoptionRequestStatus.PENDING)).thenReturn(List.of(adoptionRequest));
@@ -120,7 +131,9 @@ class AdoptionRequestServiceTest {
         adoptionRequest.setPet(createPet(UUID.randomUUID(), PetStatus.ONGOING_ADOPTION));
         adoptionRequest.setRequester(createUser(requesterId, UserRole.USER));
         adoptionRequest.setStatus(AdoptionRequestStatus.PENDING);
+        adoptionRequest.setRequestNumber("000001");
 
+        when(adoptionRequestRepository.findAllByOrderByCreatedAtAsc()).thenReturn(List.of(adoptionRequest));
         when(adoptionRequestRepository.findById(requestId)).thenReturn(Optional.of(adoptionRequest));
         when(petService.findUserEntity(actingUserId)).thenReturn(createUser(actingUserId, UserRole.USER));
 
@@ -135,6 +148,71 @@ class AdoptionRequestServiceTest {
 
         assertEquals(403, exception.getStatusCode().value());
         verify(gamificationIntegrationService, never()).onPetAdopted(any());
+    }
+
+    @Test
+    void getRequestsByPetBackfillsMissingOrLegacyRequestNumbers() {
+        UUID petId = UUID.randomUUID();
+        AdoptionRequest legacyRequest = new AdoptionRequest();
+        legacyRequest.setId(UUID.randomUUID());
+        legacyRequest.setPet(createPet(petId, PetStatus.ONGOING_ADOPTION));
+        legacyRequest.setRequester(createUser(UUID.randomUUID(), UserRole.USER));
+        legacyRequest.setStatus(AdoptionRequestStatus.PENDING);
+        legacyRequest.setRequestNumber("AR-20260402090000-ABC123");
+
+        AdoptionRequest missingNumberRequest = new AdoptionRequest();
+        missingNumberRequest.setId(UUID.randomUUID());
+        missingNumberRequest.setPet(createPet(petId, PetStatus.ONGOING_ADOPTION));
+        missingNumberRequest.setRequester(createUser(UUID.randomUUID(), UserRole.USER));
+        missingNumberRequest.setStatus(AdoptionRequestStatus.REJECTED);
+
+        when(petService.findPetEntity(petId)).thenReturn(createPet(petId, PetStatus.ONGOING_ADOPTION));
+        when(adoptionRequestRepository.findAllByOrderByCreatedAtAsc()).thenReturn(List.of(legacyRequest, missingNumberRequest));
+        when(adoptionRequestRepository.findByPetIdOrderByCreatedAtDesc(petId)).thenReturn(List.of(missingNumberRequest, legacyRequest));
+
+        List<AdoptionRequestResponse> responses = adoptionRequestService.getRequestsByPet(petId);
+
+        assertEquals("000002", responses.get(0).requestNumber());
+        assertEquals("000001", responses.get(1).requestNumber());
+        verify(adoptionRequestRepository).saveAll(any());
+    }
+
+    @Test
+    void getAdoptionRequestsReturnsPaginatedListingLikeOtherModules() {
+        UUID petId = UUID.randomUUID();
+        UUID requesterId = UUID.randomUUID();
+
+        AdoptionRequest adoptionRequest = new AdoptionRequest();
+        adoptionRequest.setId(UUID.randomUUID());
+        adoptionRequest.setPet(createPet(petId, PetStatus.ONGOING_ADOPTION));
+        adoptionRequest.setRequester(createUser(requesterId, UserRole.USER));
+        adoptionRequest.setStatus(AdoptionRequestStatus.PENDING);
+        adoptionRequest.setRequestNumber("000001");
+
+        when(adoptionRequestRepository.findAllByOrderByCreatedAtAsc()).thenReturn(List.of(adoptionRequest));
+        when(adoptionRequestRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(org.springframework.data.domain.Pageable.class)))
+            .thenReturn(new PageImpl<>(List.of(adoptionRequest)));
+
+        PageResponse<AdoptionRequestResponse> response = adoptionRequestService.getAdoptionRequests(
+            "000001",
+            petId,
+            requesterId,
+            AdoptionRequestStatus.PENDING,
+            "000001",
+            "Milo",
+            "Jane",
+            "jane@example.com",
+            0,
+            10,
+            "createdAt",
+            "desc",
+            false
+        );
+
+        assertEquals(1, response.content().size());
+        assertEquals("000001", response.content().get(0).requestNumber());
+        assertEquals("createdAt", response.sortBy());
+        assertEquals("desc", response.sortDirection());
     }
 
     private Pet createPet(UUID petId, PetStatus status) {

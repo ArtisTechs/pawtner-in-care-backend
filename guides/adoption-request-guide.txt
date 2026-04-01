@@ -8,6 +8,7 @@ Overview
 - User-scoped actions use the `X-User-Id` header, following the existing project pattern.
 
 Main endpoints
+- GET /api/adoption-requests
 - POST /api/pets/{petId}/adoption-requests
 - GET /api/pets/{petId}/adoption-requests
 - GET /api/users/{userId}/adoption-requests
@@ -39,6 +40,44 @@ Approval rules
 - Only `PENDING` requests can be updated.
 - Duplicate pending requests for the same pet and same user are blocked.
 - If one request is approved, other pending requests for that pet are auto-rejected.
+- Each request also gets an auto-filled `requestNumber` for easier tracking in the UI or admin panel.
+
+Get all adoption requests
+Endpoint:
+- GET /api/adoption-requests
+
+Supported query parameters
+- search
+- petId
+- requesterId
+- status
+- requestNumber
+- petName
+- requesterName
+- requesterEmail
+- page
+- size
+- sortBy
+- sortDir
+- ignorePagination
+
+Allowed sortBy values
+- requestNumber
+- status
+- createdAt
+- updatedAt
+- reviewedAt
+- pet.name
+- requester.firstName
+- requester.lastName
+- requester.email
+
+Example:
+- GET /api/adoption-requests?page=0&size=10&sortBy=createdAt&sortDir=desc
+- GET /api/adoption-requests?status=PENDING
+- GET /api/adoption-requests?requestNumber=000001
+- GET /api/adoption-requests?requesterName=Jane
+- GET /api/adoption-requests?petName=Buddy&ignorePagination=true
 
 1. Create Adoption Request
 Endpoint:
@@ -59,6 +98,7 @@ Sample body:
 Sample response:
 {
   "id": "660e8400-e29b-41d4-a716-446655440000",
+  "requestNumber": "000001",
   "pet": {
     "id": "550e8400-e29b-41d4-a716-446655440000",
     "name": "Buddy",
@@ -87,6 +127,9 @@ Validation notes
 - The message can be up to 1000 characters.
 - You cannot create a request for a pet that is already `ADOPTED`.
 - You cannot create a second pending request for the same pet.
+- `requestNumber` is generated automatically by the backend. The client does not need to send it.
+- The format is a zero-padded sequence like `000001`, `000002`, `000003`.
+- Older adoption requests that do not have a valid number yet are backfilled automatically by the backend.
 
 2. Get Adoption Requests For A Pet
 Endpoint:
@@ -152,6 +195,7 @@ Gamification integration
 Database notes
 - Adoption requests are stored in a dedicated `adoption_requests` table.
 - The table uses a unique constraint on `pet_id + requester_id`.
+- The table also stores a unique auto-filled `request_number` value.
 - Because the project uses `spring.jpa.hibernate.ddl-auto=update`, the table should be created automatically on app startup.
 
 Suggested test flow

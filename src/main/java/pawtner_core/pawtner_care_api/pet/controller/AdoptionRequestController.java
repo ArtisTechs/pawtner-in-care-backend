@@ -13,11 +13,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import pawtner_core.pawtner_care_api.common.dto.PageResponse;
 import pawtner_core.pawtner_care_api.pet.dto.AdoptionRequestCreateRequest;
 import pawtner_core.pawtner_care_api.pet.dto.AdoptionRequestResponse;
 import pawtner_core.pawtner_care_api.pet.dto.AdoptionRequestStatusUpdateRequest;
+import pawtner_core.pawtner_care_api.pet.enums.AdoptionRequestStatus;
 import pawtner_core.pawtner_care_api.pet.service.AdoptionRequestService;
 
 @RestController
@@ -27,6 +30,39 @@ public class AdoptionRequestController {
 
     public AdoptionRequestController(AdoptionRequestService adoptionRequestService) {
         this.adoptionRequestService = adoptionRequestService;
+    }
+
+    @GetMapping("/api/adoption-requests")
+    public PageResponse<AdoptionRequestResponse> getAdoptionRequests(
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) UUID petId,
+        @RequestParam(required = false) UUID requesterId,
+        @RequestParam(required = false) AdoptionRequestStatus status,
+        @RequestParam(required = false) String requestNumber,
+        @RequestParam(required = false) String petName,
+        @RequestParam(required = false) String requesterName,
+        @RequestParam(required = false) String requesterEmail,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "createdAt") String sortBy,
+        @RequestParam(defaultValue = "desc") String sortDir,
+        @RequestParam(defaultValue = "true") boolean ignorePagination
+    ) {
+        return adoptionRequestService.getAdoptionRequests(
+            search,
+            petId,
+            requesterId,
+            status,
+            requestNumber,
+            petName,
+            requesterName,
+            requesterEmail,
+            page,
+            size,
+            sortBy,
+            sortDir,
+            ignorePagination
+        );
     }
 
     @PostMapping("/api/pets/{petId}/adoption-requests")

@@ -7,6 +7,7 @@ import pawtner_core.pawtner_care_api.pet.enums.AdoptionRequestStatus;
 
 public record AdoptionRequestResponse(
     UUID id,
+    String requestNumber,
     AdoptionRequestPetResponse pet,
     AdoptionRequestUserResponse requester,
     AdoptionRequestStatus status,

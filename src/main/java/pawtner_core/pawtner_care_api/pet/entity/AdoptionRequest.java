@@ -44,6 +44,9 @@ public class AdoptionRequest {
     @Column(nullable = false, updatable = false, length = 36)
     private UUID id;
 
+    @Column(name = "request_number", nullable = false, updatable = false, unique = true, length = 32)
+    private String requestNumber;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "pet_id", nullable = false)
     private Pet pet;
@@ -93,6 +96,14 @@ public class AdoptionRequest {
 
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    public String getRequestNumber() {
+        return requestNumber;
+    }
+
+    public void setRequestNumber(String requestNumber) {
+        this.requestNumber = requestNumber;
     }
 
     public Pet getPet() {

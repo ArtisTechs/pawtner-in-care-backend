@@ -9,6 +9,7 @@ public record CommentResponse(
     UUID id,
     UUID postId,
     UUID userId,
+    CommunityUserSummaryResponse user,
     String content,
     CommentStatus status,
     LocalDateTime createdAt,

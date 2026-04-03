@@ -1,6 +1,7 @@
 package pawtner_core.pawtner_care_api.community.service;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -15,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import pawtner_core.pawtner_care_api.community.dto.CommentResponse;
 import pawtner_core.pawtner_care_api.community.dto.CommunityPostCommentCreateRequest;
 import pawtner_core.pawtner_care_api.community.dto.CommunityPostCommentUpdateRequest;
+import pawtner_core.pawtner_care_api.community.dto.CommunityUserSummaryResponse;
 import pawtner_core.pawtner_care_api.community.entity.CommunityPost;
 import pawtner_core.pawtner_care_api.community.entity.CommunityPostComment;
 import pawtner_core.pawtner_care_api.community.enums.CommentStatus;
@@ -62,7 +64,10 @@ public class CommunityPostCommentService {
         post.setCommentCount(post.getCommentCount() + 1);
         communityPostRepository.save(post);
 
-        return communityPostMapper.toCommentResponse(savedComment);
+        return communityPostMapper.toCommentResponse(
+            savedComment,
+            communityUserIntegrationService.getUserSummary(savedComment.getUserId())
+        );
     }
 
     @Transactional
@@ -77,7 +82,11 @@ public class CommunityPostCommentService {
         validateCommentOwner(comment, currentUserId);
 
         comment.setContent(request.content().trim());
-        return communityPostMapper.toCommentResponse(communityPostCommentRepository.save(comment));
+        CommunityPostComment savedComment = communityPostCommentRepository.save(comment);
+        return communityPostMapper.toCommentResponse(
+            savedComment,
+            communityUserIntegrationService.getUserSummary(savedComment.getUserId())
+        );
     }
 
     @Transactional
@@ -111,16 +120,24 @@ public class CommunityPostCommentService {
         Sort sort = Sort.by(direction, "createdAt");
 
         if (ignorePagination) {
-            Page<CommentResponse> responsePage = communityPostCommentRepository
-                .findByPostIdAndStatusAndDeletedAtIsNull(postId, CommentStatus.ACTIVE, Pageable.unpaged(sort))
-                .map(communityPostMapper::toCommentResponse);
+            Page<CommunityPostComment> commentsPage = communityPostCommentRepository
+                .findByPostIdAndStatusAndDeletedAtIsNull(postId, CommentStatus.ACTIVE, Pageable.unpaged(sort));
+            Map<UUID, CommunityUserSummaryResponse> usersById = communityUserIntegrationService.getUserSummaries(
+                commentsPage.getContent().stream().map(CommunityPostComment::getUserId).distinct().toList()
+            );
+            Page<CommentResponse> responsePage = commentsPage
+                .map(comment -> communityPostMapper.toCommentResponse(comment, usersById.get(comment.getUserId())));
             return PageResponse.fromList(responsePage.getContent(), "createdAt", direction.name().toLowerCase(), true);
         }
 
         Pageable pageable = PageRequest.of(safePage, safeSize, sort);
-        Page<CommentResponse> responsePage = communityPostCommentRepository
-            .findByPostIdAndStatusAndDeletedAtIsNull(postId, CommentStatus.ACTIVE, pageable)
-            .map(communityPostMapper::toCommentResponse);
+        Page<CommunityPostComment> commentsPage = communityPostCommentRepository
+            .findByPostIdAndStatusAndDeletedAtIsNull(postId, CommentStatus.ACTIVE, pageable);
+        Map<UUID, CommunityUserSummaryResponse> usersById = communityUserIntegrationService.getUserSummaries(
+            commentsPage.getContent().stream().map(CommunityPostComment::getUserId).distinct().toList()
+        );
+        Page<CommentResponse> responsePage = commentsPage
+            .map(comment -> communityPostMapper.toCommentResponse(comment, usersById.get(comment.getUserId())));
 
         return PageResponse.fromPage(responsePage, "createdAt", direction.name().toLowerCase(), false);
     }

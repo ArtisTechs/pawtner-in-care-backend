@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import pawtner_core.pawtner_care_api.common.dto.PageResponse;
+import pawtner_core.pawtner_care_api.user.dto.UserActiveUpdateRequest;
 import pawtner_core.pawtner_care_api.user.dto.UserDetailResponse;
 import pawtner_core.pawtner_care_api.user.dto.UserRequest;
 import pawtner_core.pawtner_care_api.user.dto.UserResponse;
@@ -121,6 +122,13 @@ public class UserService {
         }
 
         applyUpdateRequest(user, request, normalizedEmail);
+        return toResponse(userRepository.save(user));
+    }
+
+    @Transactional
+    public UserResponse updateUserActiveStatus(UUID id, UserActiveUpdateRequest request) {
+        User user = findUser(id);
+        user.setActive(request.active());
         return toResponse(userRepository.save(user));
     }
 

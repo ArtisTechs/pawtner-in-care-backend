@@ -29,6 +29,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import pawtner_core.pawtner_care_api.community.dto.CommunityPostCreateRequest;
 import pawtner_core.pawtner_care_api.community.dto.CommunityPostUpdateRequest;
+import pawtner_core.pawtner_care_api.community.dto.CommunityUserSummaryResponse;
 import pawtner_core.pawtner_care_api.community.dto.FeedItemResponse;
 import pawtner_core.pawtner_care_api.community.dto.PostMediaRequest;
 import pawtner_core.pawtner_care_api.community.dto.PostResponse;
@@ -224,6 +225,9 @@ public class CommunityPostService {
         }
 
         List<UUID> postIds = extractPostIds(posts);
+        Map<UUID, CommunityUserSummaryResponse> usersById = communityUserIntegrationService.getUserSummaries(
+            posts.stream().map(CommunityPost::getUserId).distinct().toList()
+        );
         Map<UUID, List<CommunityPostMedia>> mediaByPostId = getMediaByPostId(postIds);
         Map<UUID, List<Hashtag>> hashtagsByPostId = getHashtagsByPostId(postIds);
         Set<UUID> likedPostIds = getLikedPostIds(postIds, currentUserId);
@@ -231,6 +235,7 @@ public class CommunityPostService {
         return posts.stream()
             .map(post -> communityPostMapper.toFeedItemResponse(
                 post,
+                usersById.get(post.getUserId()),
                 mediaByPostId.getOrDefault(post.getId(), List.of()),
                 hashtagsByPostId.getOrDefault(post.getId(), List.of()),
                 likedPostIds.contains(post.getId())
@@ -240,12 +245,14 @@ public class CommunityPostService {
 
     private PostResponse mapPost(CommunityPost post, UUID currentUserId) {
         List<UUID> postIds = List.of(post.getId());
+        CommunityUserSummaryResponse user = communityUserIntegrationService.getUserSummary(post.getUserId());
         Map<UUID, List<CommunityPostMedia>> mediaByPostId = getMediaByPostId(postIds);
         Map<UUID, List<Hashtag>> hashtagsByPostId = getHashtagsByPostId(postIds);
         Set<UUID> likedPostIds = getLikedPostIds(postIds, currentUserId);
 
         return communityPostMapper.toPostResponse(
             post,
+            user,
             mediaByPostId.getOrDefault(post.getId(), List.of()),
             hashtagsByPostId.getOrDefault(post.getId(), List.of()),
             likedPostIds.contains(post.getId())

@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import pawtner_core.pawtner_care_api.auth.service.AuthTokenService;
 import pawtner_core.pawtner_care_api.common.dto.PageResponse;
+import pawtner_core.pawtner_care_api.user.dto.UserActiveUpdateRequest;
 import pawtner_core.pawtner_care_api.user.dto.UserDetailResponse;
 import pawtner_core.pawtner_care_api.user.dto.UserRequest;
 import pawtner_core.pawtner_care_api.user.dto.UserResponse;
@@ -75,6 +77,22 @@ public class UserController {
         @Valid @RequestBody UserUpdateRequest request
     ) {
         return userService.updateUser(id, extractCurrentUserId(authorizationHeader), request);
+    }
+
+    @PutMapping("/{id}/active")
+    public UserResponse updateUserActiveStatus(
+        @PathVariable UUID id,
+        @Valid @RequestBody UserActiveUpdateRequest request
+    ) {
+        return userService.updateUserActiveStatus(id, request);
+    }
+
+    @PatchMapping("/{id}/active")
+    public UserResponse patchUserActiveStatus(
+        @PathVariable UUID id,
+        @Valid @RequestBody UserActiveUpdateRequest request
+    ) {
+        return userService.updateUserActiveStatus(id, request);
     }
 
     @DeleteMapping("/{id}")

@@ -10,6 +10,7 @@ import pawtner_core.pawtner_care_api.community.enums.PostVisibility;
 public record PostResponse(
     UUID postId,
     UUID userId,
+    CommunityUserSummaryResponse user,
     String content,
     PostVisibility visibility,
     PostStatus status,

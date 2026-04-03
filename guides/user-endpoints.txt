@@ -94,7 +94,20 @@ Notes:
 - updatedDate is auto-refreshed whenever the user is edited
 - active is not changed through this endpoint
 
-5. Delete User
+5. Update User Active Status
+PUT /{id}/active
+Content-Type: application/json
+
+Sample body:
+{
+  "active": false
+}
+
+Notes:
+- Updates only the user's `active` flag
+- Response includes the updated `active` value and refreshed `updatedDate`
+
+6. Delete User
 DELETE /{id}
 
 Sample:

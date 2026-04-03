@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import pawtner_core.pawtner_care_api.community.dto.CommentResponse;
+import pawtner_core.pawtner_care_api.community.dto.CommunityUserSummaryResponse;
 import pawtner_core.pawtner_care_api.community.dto.FeedItemResponse;
 import pawtner_core.pawtner_care_api.community.dto.HashtagResponse;
 import pawtner_core.pawtner_care_api.community.dto.LikeResponse;
@@ -21,6 +22,7 @@ public class CommunityPostMapper {
 
     public PostResponse toPostResponse(
         CommunityPost post,
+        CommunityUserSummaryResponse user,
         List<CommunityPostMedia> mediaItems,
         List<Hashtag> hashtags,
         boolean likedByCurrentUser
@@ -28,6 +30,7 @@ public class CommunityPostMapper {
         return new PostResponse(
             post.getId(),
             post.getUserId(),
+            user,
             post.getContent(),
             post.getVisibility(),
             post.getStatus(),
@@ -43,6 +46,7 @@ public class CommunityPostMapper {
 
     public FeedItemResponse toFeedItemResponse(
         CommunityPost post,
+        CommunityUserSummaryResponse user,
         List<CommunityPostMedia> mediaItems,
         List<Hashtag> hashtags,
         boolean likedByCurrentUser
@@ -50,6 +54,7 @@ public class CommunityPostMapper {
         return new FeedItemResponse(
             post.getId(),
             post.getUserId(),
+            user,
             post.getContent(),
             post.getVisibility(),
             post.getStatus(),
@@ -63,11 +68,12 @@ public class CommunityPostMapper {
         );
     }
 
-    public CommentResponse toCommentResponse(CommunityPostComment comment) {
+    public CommentResponse toCommentResponse(CommunityPostComment comment, CommunityUserSummaryResponse user) {
         return new CommentResponse(
             comment.getId(),
             comment.getPost().getId(),
             comment.getUserId(),
+            user,
             comment.getContent(),
             comment.getStatus(),
             comment.getCreatedAt(),

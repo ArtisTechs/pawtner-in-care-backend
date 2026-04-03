@@ -344,6 +344,7 @@ Response notes
 - Post responses include:
   postId
   userId
+  user
   content
   visibility
   status
@@ -358,6 +359,7 @@ Response notes
   id
   postId
   userId
+  user
   content
   status
   createdAt

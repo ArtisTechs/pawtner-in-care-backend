@@ -6,6 +6,7 @@ import java.util.UUID;
 public record PaymentModeResponse(
     UUID id,
     String name,
+    String accountNumber,
     String photoQr,
     LocalDateTime createdDate
 ) {

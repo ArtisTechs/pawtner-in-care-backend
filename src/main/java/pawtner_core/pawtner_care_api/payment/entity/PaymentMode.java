@@ -30,6 +30,9 @@ public class PaymentMode {
     @Column(name = "photo_qr", length = 500)
     private String photoQr;
 
+    @Column(name = "account_number", length = 100)
+    private String accountNumber;
+
     @Column(name = "created_date", nullable = false, updatable = false)
     private LocalDateTime createdDate;
 
@@ -60,6 +63,14 @@ public class PaymentMode {
 
     public void setPhotoQr(String photoQr) {
         this.photoQr = photoQr;
+    }
+
+    public String getAccountNumber() {
+        return accountNumber;
+    }
+
+    public void setAccountNumber(String accountNumber) {
+        this.accountNumber = accountNumber;
     }
 
     public LocalDateTime getCreatedDate() {

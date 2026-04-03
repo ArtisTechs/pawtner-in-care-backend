@@ -16,6 +16,7 @@ Content-Type: application/json
 Sample body:
 {
   "name": "GCash",
+  "accountNumber": "09171234567",
   "photoQr": "https://example.com/qr/gcash.png"
 }
 
@@ -23,6 +24,7 @@ Notes:
 - ID is auto-generated as UUID
 - createdDate is auto-generated on create
 - Required field: name
+- accountNumber is optional and returned in payment mode details
 
 2. Get Payment Mode List
 GET /
@@ -40,6 +42,7 @@ Content-Type: application/json
 Sample body:
 {
   "name": "Maya",
+  "accountNumber": "09179876543",
   "photoQr": "https://example.com/qr/maya.png"
 }
 

@@ -111,6 +111,7 @@ public class PaymentModeService {
 
     private void applyRequest(PaymentMode paymentMode, PaymentModeRequest request) {
         paymentMode.setName(request.name().trim());
+        paymentMode.setAccountNumber(normalizeOptionalText(request.accountNumber()));
         paymentMode.setPhotoQr(normalizeOptionalText(request.photoQr()));
     }
 
@@ -174,6 +175,7 @@ public class PaymentModeService {
         return new PaymentModeResponse(
             paymentMode.getId(),
             paymentMode.getName(),
+            paymentMode.getAccountNumber(),
             paymentMode.getPhotoQr(),
             paymentMode.getCreatedDate()
         );

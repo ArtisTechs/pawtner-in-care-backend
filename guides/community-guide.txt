@@ -193,6 +193,9 @@ Default feed behavior
 - Public active posts only
 - Deleted posts are excluded
 - likedByCurrentUser is included when X-User-Id is provided
+- Each post and comment includes a lightweight `user` summary, not the full user record
+- The included user summary fields are:
+  `id`, `firstName`, `middleName`, `lastName`, `profilePicture`
 
 Get feed examples
 - GET /api/community/posts?page=0&size=10&sortBy=createdAt&sortDir=desc
@@ -200,6 +203,47 @@ Get feed examples
 - GET /api/community/posts?hashtag=petcare
 - GET /api/community/posts?keyword=adoption
 - GET /api/community/posts?ignorePagination=true
+
+Example post/feed response shape:
+{
+  "postId": "0f3c2b7a-8c9d-4f1a-a2b3-123456789abc",
+  "userId": "6a7b8c9d-1e2f-4a5b-9c0d-abcdef123456",
+  "user": {
+    "id": "6a7b8c9d-1e2f-4a5b-9c0d-abcdef123456",
+    "firstName": "Juan",
+    "middleName": "Santos",
+    "lastName": "Dela Cruz",
+    "profilePicture": "https://example.com/profile.jpg"
+  },
+  "content": "My rescued dog is doing better now!",
+  "visibility": "PUBLIC",
+  "status": "ACTIVE",
+  "likeCount": 12,
+  "commentCount": 3,
+  "likedByCurrentUser": true,
+  "hashtags": [],
+  "media": [],
+  "createdAt": "2026-04-04T10:30:00",
+  "updatedAt": "2026-04-04T11:00:00"
+}
+
+Example comment response shape:
+{
+  "id": "22222222-3333-4444-5555-666666666666",
+  "postId": "0f3c2b7a-8c9d-4f1a-a2b3-123456789abc",
+  "userId": "6a7b8c9d-1e2f-4a5b-9c0d-abcdef123456",
+  "user": {
+    "id": "6a7b8c9d-1e2f-4a5b-9c0d-abcdef123456",
+    "firstName": "Juan",
+    "middleName": "Santos",
+    "lastName": "Dela Cruz",
+    "profilePicture": "https://example.com/profile.jpg"
+  },
+  "content": "Glad to hear that.",
+  "status": "ACTIVE",
+  "createdAt": "2026-04-04T10:35:00",
+  "updatedAt": "2026-04-04T10:35:00"
+}
 
 Create post
 Endpoint:

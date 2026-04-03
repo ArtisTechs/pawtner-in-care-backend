@@ -26,8 +26,13 @@ Sample body:
 
 Notes:
 - If role is omitted, default is USER
+- USER accounts default to active
+- ADMIN accounts default to inactive
 - ID is auto-generated as UUID
 - profilePicture is optional and stored as a string
+- createdDate is auto-generated on create
+- updatedDate is auto-generated on create and update
+- Response objects include `active`, `createdDate`, and `updatedDate`
 
 2. Get User List
 GET /
@@ -54,6 +59,9 @@ Allowed sortBy values:
 - lastName
 - email
 - profilePicture
+- active
+- createdDate
+- updatedDate
 
 Allowed sortDir values:
 - asc
@@ -76,9 +84,15 @@ Sample body:
   "lastName": "Doe",
   "email": "jane.doe@example.com",
   "profilePicture": "https://example.com/profiles/jane.jpg",
-  "password": "NewPass123!",
-  "role": "USER"
+  "password": "NewPass123!"
 }
+
+Notes:
+- Users can only update their own profile
+- password is optional during profile updates
+- role cannot be changed through this endpoint
+- updatedDate is auto-refreshed whenever the user is edited
+- active is not changed through this endpoint
 
 5. Delete User
 DELETE /{id}

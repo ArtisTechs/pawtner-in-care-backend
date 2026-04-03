@@ -73,6 +73,9 @@ public class Pet {
     @Column(nullable = false, length = 30)
     private PetStatus status;
 
+    @Column(nullable = false)
+    private boolean deleted;
+
     @ManyToOne
     @JoinColumn(name = "adopted_by_id")
     private User adoptedBy;
@@ -195,6 +198,14 @@ public class Pet {
 
     public void setStatus(PetStatus status) {
         this.status = status;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 
     public User getAdoptedBy() {

@@ -51,7 +51,7 @@ public class PetFavoriteService {
     public List<PetResponse> getFavoritePetsByUser(UUID userId) {
         petService.findUserEntity(userId);
 
-        return petFavoriteRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
+        return petFavoriteRepository.findByUserIdAndPetDeletedFalseOrderByCreatedAtDesc(userId).stream()
             .map(PetFavorite::getPet)
             .map(petService::toPetResponse)
             .toList();

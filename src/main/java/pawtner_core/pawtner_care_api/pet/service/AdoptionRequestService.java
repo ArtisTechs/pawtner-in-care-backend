@@ -145,11 +145,7 @@ public class AdoptionRequestService {
         ensureRequestNumber(adoptionRequest);
 
         AdoptionRequest savedRequest = adoptionRequestRepository.save(adoptionRequest);
-
-        if (pet.getStatus() == PetStatus.AVAILABLE_FOR_ADOPTION) {
-            pet.setStatus(PetStatus.ONGOING_ADOPTION);
-            petRepository.save(pet);
-        }
+        syncPetStatusWithRequests(pet);
 
         return toResponse(savedRequest);
     }
@@ -192,8 +188,8 @@ public class AdoptionRequestService {
 
         if (targetStatus == AdoptionRequestStatus.APPROVED) {
             approveRequest(adoptionRequest);
-        } else if (targetStatus == AdoptionRequestStatus.REJECTED || targetStatus == AdoptionRequestStatus.CANCELLED) {
-            resetPetAvailabilityIfNeeded(adoptionRequest.getPet());
+        } else {
+            syncPetStatusWithRequests(adoptionRequest.getPet());
         }
 
         return toResponse(adoptionRequestRepository.save(adoptionRequest));
@@ -360,17 +356,32 @@ public class AdoptionRequestService {
         gamificationIntegrationService.onPetAdopted(adoptionRequest.getRequester().getId());
     }
 
-    private void resetPetAvailabilityIfNeeded(Pet pet) {
+    private void syncPetStatusWithRequests(Pet pet) {
         if (pet.getStatus() == PetStatus.ADOPTED) {
             return;
         }
 
-        boolean hasPendingRequests = adoptionRequestRepository.findByPetIdAndStatus(pet.getId(), AdoptionRequestStatus.PENDING)
-            .stream()
-            .anyMatch(request -> request.getStatus() == AdoptionRequestStatus.PENDING);
+        boolean hasPendingRequests = !adoptionRequestRepository.findByPetIdAndStatus(
+            pet.getId(),
+            AdoptionRequestStatus.PENDING
+        ).isEmpty();
 
-        if (!hasPendingRequests) {
+        if (hasPendingRequests) {
+            if (pet.getStatus() != PetStatus.ONGOING_ADOPTION) {
+                pet.setStatus(PetStatus.ONGOING_ADOPTION);
+                petRepository.save(pet);
+            }
+            return;
+        }
+
+        boolean petNeedsAvailabilityReset = pet.getStatus() != PetStatus.AVAILABLE_FOR_ADOPTION
+            || pet.getAdoptedBy() != null
+            || pet.getAdoptionDate() != null;
+
+        if (petNeedsAvailabilityReset) {
             pet.setStatus(PetStatus.AVAILABLE_FOR_ADOPTION);
+            pet.setAdoptedBy(null);
+            pet.setAdoptionDate(null);
             petRepository.save(pet);
         }
     }

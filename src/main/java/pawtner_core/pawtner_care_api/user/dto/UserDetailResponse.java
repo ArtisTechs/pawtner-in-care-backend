@@ -1,5 +1,6 @@
 package pawtner_core.pawtner_care_api.user.dto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,6 +15,9 @@ public record UserDetailResponse(
     String email,
     String profilePicture,
     UserRole role,
+    Boolean active,
+    LocalDateTime createdDate,
+    LocalDateTime updatedDate,
     List<UserAchievementResponse> achievements
 ) {
 }

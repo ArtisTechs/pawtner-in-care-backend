@@ -32,6 +32,10 @@ Body:
   "password": "Test1234!"
 }
 
+Notes:
+- Signup creates a `USER` account
+- `USER` signups default to `active=true`
+
 4. Login
 POST http://localhost:8080/api/auth/login
 
@@ -40,6 +44,10 @@ Body:
   "email": "jane@example.com",
   "password": "Test1234!"
 }
+
+Notes:
+- Inactive users cannot log in
+- Successful login returns `active`, `createdDate`, and `updatedDate` inside `user`
 
 5. Forgot password flow
 POST http://localhost:8080/api/auth/send-otp
@@ -89,5 +97,15 @@ Body:
   "role": "USER"
 }
 
+Notes:
+- New `USER` accounts default to active
+- New `ADMIN` accounts default to inactive
+- User responses include `active`, `createdDate`, and `updatedDate`
+
 9. Get paginated users
 GET http://localhost:8080/api/users?page=0&size=10&sortBy=id&sortDir=asc
+
+Allowed extra sort fields:
+- active
+- createdDate
+- updatedDate

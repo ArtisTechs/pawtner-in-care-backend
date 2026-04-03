@@ -26,6 +26,8 @@ import pawtner_core.pawtner_care_api.pet.entity.Pet;
 import pawtner_core.pawtner_care_api.user.entity.User;
 import pawtner_core.pawtner_care_api.pet.enums.PetStatus;
 import pawtner_core.pawtner_care_api.exception.ResourceNotFoundException;
+import pawtner_core.pawtner_care_api.pet.repository.AdoptionRequestRepository;
+import pawtner_core.pawtner_care_api.pet.repository.PetFavoriteRepository;
 import pawtner_core.pawtner_care_api.pet.repository.PetRepository;
 import pawtner_core.pawtner_care_api.user.repository.UserRepository;
 
@@ -47,10 +49,19 @@ public class PetService {
     );
 
     private final PetRepository petRepository;
+    private final AdoptionRequestRepository adoptionRequestRepository;
+    private final PetFavoriteRepository petFavoriteRepository;
     private final UserRepository userRepository;
 
-    public PetService(PetRepository petRepository, UserRepository userRepository) {
+    public PetService(
+        PetRepository petRepository,
+        AdoptionRequestRepository adoptionRequestRepository,
+        PetFavoriteRepository petFavoriteRepository,
+        UserRepository userRepository
+    ) {
         this.petRepository = petRepository;
+        this.adoptionRequestRepository = adoptionRequestRepository;
+        this.petFavoriteRepository = petFavoriteRepository;
         this.userRepository = userRepository;
     }
 
@@ -126,11 +137,18 @@ public class PetService {
     @Transactional
     public void deletePet(UUID id) {
         Pet pet = findPetEntity(id);
+        petFavoriteRepository.deleteByPetId(id);
+        if (adoptionRequestRepository.existsByPetId(id)) {
+            pet.setDeleted(true);
+            petRepository.save(pet);
+            return;
+        }
+
         petRepository.delete(pet);
     }
 
     public Pet findPetEntity(UUID id) {
-        return petRepository.findById(id)
+        return petRepository.findByIdAndDeletedFalse(id)
             .orElseThrow(() -> new ResourceNotFoundException("Pet with id " + id + " was not found"));
     }
 
@@ -147,6 +165,7 @@ public class PetService {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new java.util.ArrayList<>();
 
+            predicates.add(criteriaBuilder.isFalse(root.get("deleted")));
             addLikePredicate(predicates, criteriaBuilder, root.get("name"), name);
             addLikePredicate(predicates, criteriaBuilder, root.get("gender"), gender);
             addLikePredicate(predicates, criteriaBuilder, root.get("type"), type);

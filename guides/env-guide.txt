@@ -14,9 +14,18 @@ BREVO_SANDBOX_MODE=true
 OTP_EXPIRY_MINUTES=5
 
 Optional variables:
-APP_AUTH_TOKEN_TTL_HOURS=24
+APP_AUTH_TOKEN_TTL_DAYS=90
+APP_MAIN_ADMIN_FIRST_NAME=Main
+APP_MAIN_ADMIN_MIDDLE_NAME=
+APP_MAIN_ADMIN_LAST_NAME=Admin
+APP_MAIN_ADMIN_EMAIL=admin@example.com
+APP_MAIN_ADMIN_PASSWORD=Admin1234!
 
 Notes:
 - Use BREVO_SANDBOX_MODE=false for real email sending
 - Keep .env out of git
 - Railway can use the same variable names in deployment settings
+- The main admin account is auto-created on startup only when first name, last name, email, and password are all provided
+- The seeded main admin is created only if the email does not already exist
+- The seeded main admin is created as `ADMIN` and `active=true`
+- Startup SQL also marks legacy users active

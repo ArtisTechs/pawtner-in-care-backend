@@ -20,6 +20,8 @@ public interface AdoptionRequestRepository extends JpaRepository<AdoptionRequest
 
     Optional<AdoptionRequest> findByPetIdAndRequesterId(UUID petId, UUID requesterId);
 
+    boolean existsByPetId(UUID petId);
+
     boolean existsByPetIdAndRequesterIdAndStatus(UUID petId, UUID requesterId, AdoptionRequestStatus status);
 
     List<AdoptionRequest> findByPetIdAndStatus(UUID petId, AdoptionRequestStatus status);

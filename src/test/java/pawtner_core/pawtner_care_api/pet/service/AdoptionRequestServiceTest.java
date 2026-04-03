@@ -65,6 +65,7 @@ class AdoptionRequestServiceTest {
         when(adoptionRequestRepository.existsByPetIdAndRequesterIdAndStatus(petId, requesterId, AdoptionRequestStatus.PENDING))
             .thenReturn(false);
         when(adoptionRequestRepository.findByPetIdAndRequesterId(petId, requesterId)).thenReturn(Optional.empty());
+        when(adoptionRequestRepository.findByPetIdAndStatus(petId, AdoptionRequestStatus.PENDING)).thenReturn(List.of(new AdoptionRequest()));
         when(adoptionRequestRepository.save(any(AdoptionRequest.class))).thenAnswer(invocation -> {
             AdoptionRequest savedRequest = invocation.getArgument(0);
             return savedRequest;
@@ -116,6 +117,7 @@ class AdoptionRequestServiceTest {
         assertEquals(AdoptionRequestStatus.APPROVED, response.status());
         assertEquals(PetStatus.ADOPTED, pet.getStatus());
         assertEquals(requester, pet.getAdoptedBy());
+        assertNotNull(pet.getAdoptionDate());
         verify(petRepository).save(pet);
         verify(gamificationIntegrationService).onPetAdopted(requesterId);
     }
@@ -148,6 +150,83 @@ class AdoptionRequestServiceTest {
 
         assertEquals(403, exception.getStatusCode().value());
         verify(gamificationIntegrationService, never()).onPetAdopted(any());
+    }
+
+    @Test
+    void rejectLastPendingRequestReturnsPetToAvailableForAdoption() {
+        UUID requestId = UUID.randomUUID();
+        UUID petId = UUID.randomUUID();
+        UUID requesterId = UUID.randomUUID();
+        UUID adminId = UUID.randomUUID();
+
+        Pet pet = createPet(petId, PetStatus.ONGOING_ADOPTION);
+        User requester = createUser(requesterId, UserRole.USER);
+        User admin = createUser(adminId, UserRole.ADMIN);
+
+        AdoptionRequest adoptionRequest = new AdoptionRequest();
+        adoptionRequest.setId(requestId);
+        adoptionRequest.setPet(pet);
+        adoptionRequest.setRequester(requester);
+        adoptionRequest.setStatus(AdoptionRequestStatus.PENDING);
+        adoptionRequest.setRequestNumber("000001");
+
+        when(adoptionRequestRepository.findAllByOrderByCreatedAtAsc()).thenReturn(List.of(adoptionRequest));
+        when(adoptionRequestRepository.findById(requestId)).thenReturn(Optional.of(adoptionRequest));
+        when(petService.findUserEntity(adminId)).thenReturn(admin);
+        when(adoptionRequestRepository.findByPetIdAndStatus(petId, AdoptionRequestStatus.PENDING)).thenReturn(List.of());
+        when(adoptionRequestRepository.save(any(AdoptionRequest.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        AdoptionRequestResponse response = adoptionRequestService.updateRequestStatus(
+            requestId,
+            adminId,
+            new AdoptionRequestStatusUpdateRequest(AdoptionRequestStatus.REJECTED, "Not a match")
+        );
+
+        assertEquals(AdoptionRequestStatus.REJECTED, response.status());
+        assertEquals(PetStatus.AVAILABLE_FOR_ADOPTION, pet.getStatus());
+        verify(petRepository).save(pet);
+    }
+
+    @Test
+    void cancelRequestKeepsPetOngoingWhenOtherPendingRequestsRemain() {
+        UUID requestId = UUID.randomUUID();
+        UUID petId = UUID.randomUUID();
+        UUID requesterId = UUID.randomUUID();
+        UUID otherRequesterId = UUID.randomUUID();
+
+        Pet pet = createPet(petId, PetStatus.ONGOING_ADOPTION);
+        User requester = createUser(requesterId, UserRole.USER);
+
+        AdoptionRequest adoptionRequest = new AdoptionRequest();
+        adoptionRequest.setId(requestId);
+        adoptionRequest.setPet(pet);
+        adoptionRequest.setRequester(requester);
+        adoptionRequest.setStatus(AdoptionRequestStatus.PENDING);
+        adoptionRequest.setRequestNumber("000001");
+
+        AdoptionRequest otherPendingRequest = new AdoptionRequest();
+        otherPendingRequest.setId(UUID.randomUUID());
+        otherPendingRequest.setPet(pet);
+        otherPendingRequest.setRequester(createUser(otherRequesterId, UserRole.USER));
+        otherPendingRequest.setStatus(AdoptionRequestStatus.PENDING);
+        otherPendingRequest.setRequestNumber("000002");
+
+        when(adoptionRequestRepository.findAllByOrderByCreatedAtAsc()).thenReturn(List.of(adoptionRequest, otherPendingRequest));
+        when(adoptionRequestRepository.findById(requestId)).thenReturn(Optional.of(adoptionRequest));
+        when(petService.findUserEntity(requesterId)).thenReturn(requester);
+        when(adoptionRequestRepository.findByPetIdAndStatus(petId, AdoptionRequestStatus.PENDING))
+            .thenReturn(List.of(otherPendingRequest));
+        when(adoptionRequestRepository.save(any(AdoptionRequest.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        AdoptionRequestResponse response = adoptionRequestService.updateRequestStatus(
+            requestId,
+            requesterId,
+            new AdoptionRequestStatusUpdateRequest(AdoptionRequestStatus.CANCELLED, "Changed my mind")
+        );
+
+        assertEquals(AdoptionRequestStatus.CANCELLED, response.status());
+        assertEquals(PetStatus.ONGOING_ADOPTION, pet.getStatus());
+        verify(petRepository, never()).save(pet);
     }
 
     @Test

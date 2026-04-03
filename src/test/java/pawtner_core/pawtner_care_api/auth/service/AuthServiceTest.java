@@ -3,10 +3,12 @@ package pawtner_core.pawtner_care_api.auth.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -61,6 +63,9 @@ class AuthServiceTest {
         assertNotEquals(user.getId().toString(), response.accessToken());
         assertNotEquals(user.getPassword(), response.accessToken());
         assertEquals(user.getEmail(), response.user().email());
+        assertEquals(user.getActive(), response.user().active());
+        assertEquals(user.getCreatedDate(), response.user().createdDate());
+        assertEquals(user.getUpdatedDate(), response.user().updatedDate());
         verify(authTokenService).issueToken(user);
     }
 
@@ -96,7 +101,23 @@ class AuthServiceTest {
         verify(userRepository).save(user);
     }
 
+    @Test
+    void loginRejectsInactiveUsers() {
+        User user = createUser("jane@example.com", "$2a$10$hashed-password-value");
+        user.setActive(false);
+
+        when(userRepository.findByEmail("jane@example.com")).thenReturn(Optional.of(user));
+
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> authService.login(new LoginRequest("jane@example.com", "Test1234!"))
+        );
+
+        assertEquals("User account is inactive", exception.getMessage());
+    }
+
     private User createUser(String email, String password) {
+        LocalDateTime now = LocalDateTime.now();
         User user = new User();
         user.setId(UUID.randomUUID());
         user.setFirstName("Jane");
@@ -104,6 +125,39 @@ class AuthServiceTest {
         user.setEmail(email);
         user.setPassword(password);
         user.setRole(UserRole.USER);
+        user.setActive(true);
+        user.setCreatedDate(now);
+        user.setUpdatedDate(now);
         return user;
+    }
+
+    @Test
+    void userTimestampsAreInitializedAndUpdatedAutomatically() {
+        User user = new User();
+
+        user.applyDefaults();
+
+        assertNotNull(user.getCreatedDate());
+        assertNotNull(user.getUpdatedDate());
+        assertEquals(Boolean.TRUE, user.getActive());
+        assertEquals(user.getCreatedDate(), user.getUpdatedDate());
+
+        LocalDateTime createdDate = user.getCreatedDate();
+        user.setUpdatedDate(createdDate.minusSeconds(5));
+
+        user.updateTimestamp();
+
+        assertEquals(createdDate, user.getCreatedDate());
+        assertNotNull(user.getUpdatedDate());
+    }
+
+    @Test
+    void adminUsersDefaultToInactive() {
+        User user = new User();
+        user.setRole(UserRole.ADMIN);
+
+        user.applyDefaults();
+
+        assertEquals(Boolean.FALSE, user.getActive());
     }
 }

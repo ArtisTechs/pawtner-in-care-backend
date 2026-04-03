@@ -31,10 +31,13 @@ Sample body:
 
 Notes:
 - Role defaults to USER
+- USER signups default to active
 - User ID is auto-generated as UUID
 - Email must be unique
 - The signup email must match the verified signup OTP email
 - profilePicture is optional and stored as a string
+- createdDate is auto-generated on create
+- updatedDate is auto-generated on create and update
 
 2. Login
 POST /login
@@ -57,9 +60,20 @@ Sample success response:
     "lastName": "Doe",
     "email": "jane@example.com",
     "profilePicture": "https://example.com/profiles/jane.jpg",
-    "role": "USER"
+    "role": "USER",
+    "active": true,
+    "createdDate": "2026-04-04T00:30:00",
+    "updatedDate": "2026-04-04T00:30:00"
   }
 }
+
+Login note:
+- Inactive users are not allowed to log in
+- Existing legacy users are marked active on startup by SQL seed data
+
+Main admin seed note:
+- One main admin account can be auto-created on startup from env values
+- The seeded main admin is created as `ADMIN` and forced active
 
 3. Send OTP
 POST /send-otp

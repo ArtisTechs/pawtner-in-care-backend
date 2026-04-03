@@ -11,14 +11,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import pawtner_core.pawtner_care_api.common.dto.PageResponse;
 import pawtner_core.pawtner_care_api.user.dto.UserDetailResponse;
 import pawtner_core.pawtner_care_api.user.dto.UserRequest;
 import pawtner_core.pawtner_care_api.user.dto.UserResponse;
+import pawtner_core.pawtner_care_api.user.dto.UserUpdateRequest;
 import pawtner_core.pawtner_care_api.user.entity.User;
 import pawtner_core.pawtner_care_api.user.enums.UserRole;
 import pawtner_core.pawtner_care_api.exception.ResourceNotFoundException;
@@ -28,7 +31,17 @@ import pawtner_core.pawtner_care_api.user.repository.UserRepository;
 @Service
 public class UserService {
 
-    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("id", "firstName", "middleName", "lastName", "email", "profilePicture");
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
+        "id",
+        "firstName",
+        "middleName",
+        "lastName",
+        "email",
+        "profilePicture",
+        "active",
+        "createdDate",
+        "updatedDate"
+    );
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -91,13 +104,15 @@ public class UserService {
         validateEmailAvailability(normalizedEmail);
 
         User user = new User();
-        applyRequest(user, request, normalizedEmail);
+        applyCreateRequest(user, request, normalizedEmail);
 
         return toResponse(userRepository.save(user));
     }
 
     @Transactional
-    public UserResponse updateUser(UUID id, UserRequest request) {
+    public UserResponse updateUser(UUID id, UUID currentUserId, UserUpdateRequest request) {
+        validateUserOwner(id, currentUserId);
+
         User user = findUser(id);
         String normalizedEmail = normalizeEmail(request.email());
 
@@ -105,7 +120,7 @@ public class UserService {
             throw new IllegalArgumentException("Email is already in use");
         }
 
-        applyRequest(user, request, normalizedEmail);
+        applyUpdateRequest(user, request, normalizedEmail);
         return toResponse(userRepository.save(user));
     }
 
@@ -208,7 +223,7 @@ public class UserService {
         }
     }
 
-    private void applyRequest(User user, UserRequest request, String normalizedEmail) {
+    private void applyCreateRequest(User user, UserRequest request, String normalizedEmail) {
         user.setFirstName(request.firstName().trim());
         user.setMiddleName(normalizeOptionalText(request.middleName()));
         user.setLastName(request.lastName().trim());
@@ -216,6 +231,20 @@ public class UserService {
         user.setProfilePicture(normalizeOptionalText(request.profilePicture()));
         user.setPassword(passwordEncoder.encode(request.password().trim()));
         user.setRole(resolveRole(request.role()));
+        user.setActive(resolveActiveStatus(user.getRole()));
+    }
+
+    private void applyUpdateRequest(User user, UserUpdateRequest request, String normalizedEmail) {
+        user.setFirstName(request.firstName().trim());
+        user.setMiddleName(normalizeOptionalText(request.middleName()));
+        user.setLastName(request.lastName().trim());
+        user.setEmail(normalizedEmail);
+        user.setProfilePicture(normalizeOptionalText(request.profilePicture()));
+
+        String normalizedPassword = normalizeOptionalText(request.password());
+        if (normalizedPassword != null) {
+            user.setPassword(passwordEncoder.encode(normalizedPassword));
+        }
     }
 
     private String normalizeEmail(String email) {
@@ -224,6 +253,12 @@ public class UserService {
 
     private UserRole resolveRole(UserRole role) {
         return role == null ? UserRole.USER : role;
+    }
+
+    private void validateUserOwner(UUID userId, UUID currentUserId) {
+        if (!userId.equals(currentUserId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only modify your own profile");
+        }
     }
 
     private String normalizeOptionalText(String value) {
@@ -243,7 +278,10 @@ public class UserService {
             user.getLastName(),
             user.getEmail(),
             user.getProfilePicture(),
-            user.getRole()
+            user.getRole(),
+            user.getActive(),
+            user.getCreatedDate(),
+            user.getUpdatedDate()
         );
     }
 
@@ -256,8 +294,15 @@ public class UserService {
             user.getEmail(),
             user.getProfilePicture(),
             user.getRole(),
+            user.getActive(),
+            user.getCreatedDate(),
+            user.getUpdatedDate(),
             achievementService.getUserAchievements(user.getId())
         );
+    }
+
+    private Boolean resolveActiveStatus(UserRole role) {
+        return role == UserRole.ADMIN ? Boolean.FALSE : Boolean.TRUE;
     }
 }
 

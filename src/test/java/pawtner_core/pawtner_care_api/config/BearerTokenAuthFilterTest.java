@@ -42,15 +42,17 @@ class BearerTokenAuthFilterTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
         MockFilterChain filterChain = new MockFilterChain();
 
-        request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer login-token");
-        when(authTokenService.isValid("login-token")).thenReturn(true);
+        request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer pat_abcdefghijklmnopqrstuvwxyzABCDEFG");
+        when(authTokenService.extractBearerToken("Bearer pat_abcdefghijklmnopqrstuvwxyzABCDEFG"))
+            .thenReturn("pat_abcdefghijklmnopqrstuvwxyzABCDEFG");
+        when(authTokenService.isValid("pat_abcdefghijklmnopqrstuvwxyzABCDEFG")).thenReturn(true);
 
         filter.doFilter(request, response, filterChain);
 
         assertEquals(200, response.getStatus());
         assertNotNull(SecurityContextHolder.getContext().getAuthentication());
         assertEquals("api-client", SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-        verify(authTokenService).isValid("login-token");
+        verify(authTokenService).isValid("pat_abcdefghijklmnopqrstuvwxyzABCDEFG");
     }
 
     @Test
@@ -59,13 +61,35 @@ class BearerTokenAuthFilterTest {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/events");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer bad-token");
-        when(authTokenService.isValid("bad-token")).thenReturn(false);
+        request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer pat_abcdefghijklmnopqrstuvwxyzABCDEFG");
+        when(authTokenService.extractBearerToken("Bearer pat_abcdefghijklmnopqrstuvwxyzABCDEFG"))
+            .thenReturn("pat_abcdefghijklmnopqrstuvwxyzABCDEFG");
+        when(authTokenService.isValid("pat_abcdefghijklmnopqrstuvwxyzABCDEFG")).thenReturn(false);
 
         filter.doFilter(request, response, new MockFilterChain());
 
         assertEquals(401, response.getStatus());
         assertEquals("{\"status\":401,\"error\":\"Unauthorized\",\"message\":\"Invalid bearer token\"}", response.getContentAsString());
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
+    }
+
+    @Test
+    void malformedAuthorizationHeaderReturnsUnauthorized() throws ServletException, IOException {
+        BearerTokenAuthFilter filter = new BearerTokenAuthFilter(authTokenService);
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/events");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer invalid token");
+        when(authTokenService.extractBearerToken("Bearer invalid token"))
+            .thenThrow(new IllegalArgumentException("Missing or invalid Authorization header"));
+
+        filter.doFilter(request, response, new MockFilterChain());
+
+        assertEquals(401, response.getStatus());
+        assertEquals(
+            "{\"status\":401,\"error\":\"Unauthorized\",\"message\":\"Missing or invalid Authorization header\"}",
+            response.getContentAsString()
+        );
         assertNull(SecurityContextHolder.getContext().getAuthentication());
     }
 

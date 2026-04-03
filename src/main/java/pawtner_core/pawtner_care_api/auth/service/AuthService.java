@@ -63,6 +63,10 @@ public class AuthService {
         User user = userRepository.findByEmail(normalizedEmail)
             .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
 
+        if (!Boolean.TRUE.equals(user.getActive())) {
+            throw new IllegalArgumentException("User account is inactive");
+        }
+
         if (!isPasswordValid(user, request.password())) {
             throw new IllegalArgumentException("Invalid email or password");
         }
@@ -79,7 +83,10 @@ public class AuthService {
                 user.getLastName(),
                 user.getEmail(),
                 user.getProfilePicture(),
-                user.getRole()
+                user.getRole(),
+                user.getActive(),
+                user.getCreatedDate(),
+                user.getUpdatedDate()
             )
         );
     }

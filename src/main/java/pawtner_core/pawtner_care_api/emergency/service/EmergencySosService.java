@@ -1,5 +1,7 @@
 package pawtner_core.pawtner_care_api.emergency.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -28,6 +30,8 @@ import pawtner_core.pawtner_care_api.user.repository.UserRepository;
 
 @Service
 public class EmergencySosService {
+
+    private static final int MAX_DAILY_SOS_REQUESTS = 3;
 
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
         "id",
@@ -98,6 +102,8 @@ public class EmergencySosService {
 
     @Transactional
     public EmergencySosResponse createEmergencySos(EmergencySosRequest request) {
+        validateDailyCreateLimit(request.personFilledId());
+
         EmergencySos emergencySos = new EmergencySos();
         applyRequest(emergencySos, request);
 
@@ -126,6 +132,21 @@ public class EmergencySosService {
     private User findUser(UUID id) {
         return userRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " was not found"));
+    }
+
+    private void validateDailyCreateLimit(UUID personFilledId) {
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime startOfNextDay = today.plusDays(1).atStartOfDay();
+        long dailyRequestCount = emergencySosRepository.countByPersonFilledIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThan(
+            personFilledId,
+            startOfDay,
+            startOfNextDay
+        );
+
+        if (dailyRequestCount >= MAX_DAILY_SOS_REQUESTS) {
+            throw new IllegalArgumentException("You can only create up to 3 SOS requests per day");
+        }
     }
 
     private Specification<EmergencySos> buildEmergencySosSpecification(

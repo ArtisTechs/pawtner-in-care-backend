@@ -1,5 +1,6 @@
 package pawtner_core.pawtner_care_api.user.entity;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.hibernate.annotations.JdbcTypeCode;
@@ -13,6 +14,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import pawtner_core.pawtner_care_api.user.enums.UserRole;
@@ -53,6 +55,15 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private UserRole role;
+
+    @Column
+    private Boolean active;
+
+    @Column(name = "created_date", updatable = false)
+    private LocalDateTime createdDate;
+
+    @Column(name = "updated_date")
+    private LocalDateTime updatedDate;
 
     public UUID getId() {
         return id;
@@ -118,11 +129,52 @@ public class User {
         this.role = role;
     }
 
+    public Boolean getActive() {
+        return active == null ? Boolean.TRUE : active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
+    public LocalDateTime getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(LocalDateTime createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public LocalDateTime getUpdatedDate() {
+        return updatedDate;
+    }
+
+    public void setUpdatedDate(LocalDateTime updatedDate) {
+        this.updatedDate = updatedDate;
+    }
+
     @PrePersist
-    public void applyDefaultRole() {
+    public void applyDefaults() {
         if (role == null) {
             role = UserRole.USER;
         }
+
+        if (active == null) {
+            active = role == UserRole.ADMIN ? Boolean.FALSE : Boolean.TRUE;
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        createdDate = now;
+        updatedDate = now;
+    }
+
+    @PreUpdate
+    public void updateTimestamp() {
+        if (active == null) {
+            active = Boolean.TRUE;
+        }
+
+        updatedDate = LocalDateTime.now();
     }
 }
 

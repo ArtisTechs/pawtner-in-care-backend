@@ -29,6 +29,8 @@ This API exists to support a platform where users can:
 - User signup and login
 - OTP sending and OTP confirmation
 - Signup requires a verified `signup` OTP before account creation
+- Normal `USER` signups are active by default
+- Inactive users cannot log in
 - Password reset requires a verified `reset-password` OTP and the OTP code in the final reset request
 - Protected endpoints secured with a bearer token filter
 
@@ -44,6 +46,8 @@ Main routes:
 
 - Create, read, update, and delete users
 - Retrieve user details for app-level account management
+- User responses include `active`, `createdDate`, and `updatedDate`
+- New `ADMIN` users created through the user module default to inactive
 
 Main routes:
 
@@ -187,6 +191,11 @@ Required values include:
 - `DB_URL`
 - `DB_USERNAME`
 - `DB_PASSWORD`
+- `BREVO_API_KEY`
+- `BREVO_SENDER_EMAIL`
+- `BREVO_SENDER_NAME`
+- `BREVO_SANDBOX_MODE`
+- `OTP_EXPIRY_MINUTES`
 
 Optional JPA settings:
 
@@ -195,13 +204,19 @@ Optional JPA settings:
 
 Optional auth settings:
 
-- `APP_AUTH_TOKEN_TTL_HOURS`
+- `APP_AUTH_TOKEN_TTL_DAYS`
+- `APP_MAIN_ADMIN_FIRST_NAME`
+- `APP_MAIN_ADMIN_MIDDLE_NAME`
+- `APP_MAIN_ADMIN_LAST_NAME`
+- `APP_MAIN_ADMIN_EMAIL`
+- `APP_MAIN_ADMIN_PASSWORD`
 
 ## Running Locally
 
 1. Create a `.env` file with the required database and auth values.
 2. Make sure MySQL is running and the target database exists.
-3. Start the API:
+3. Optional: configure the main seeded admin account in `.env`.
+4. Start the API:
 
 ```bash
 ./mvnw spring-boot:run
@@ -213,9 +228,20 @@ On Windows PowerShell:
 .\mvnw.cmd spring-boot:run
 ```
 
+Main admin seed example:
+
+```env
+APP_MAIN_ADMIN_FIRST_NAME=Main
+APP_MAIN_ADMIN_MIDDLE_NAME=
+APP_MAIN_ADMIN_LAST_NAME=Admin
+APP_MAIN_ADMIN_EMAIL=admin@example.com
+APP_MAIN_ADMIN_PASSWORD=Admin1234!
+```
+
 ## Development Notes
 
 - The API is stateless and issues a unique bearer token on each successful login.
+- On startup, `data.sql` marks legacy users active and the app can auto-create one configured main admin account.
 - Most business modules follow a standard Spring structure: `controller`, `service`, `repository`, `dto`, and `entity`.
 - Real-time support messaging is implemented with STOMP over WebSocket.
 - Endpoint usage guides are available under the `guides/` directory, including `guides/adoption-request-guide.txt`.

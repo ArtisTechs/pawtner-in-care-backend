@@ -14,5 +14,7 @@ public interface PetFavoriteRepository extends JpaRepository<PetFavorite, UUID> 
 
     Optional<PetFavorite> findByPetIdAndUserId(UUID petId, UUID userId);
 
-    List<PetFavorite> findByUserIdOrderByCreatedAtDesc(UUID userId);
+    List<PetFavorite> findByUserIdAndPetDeletedFalseOrderByCreatedAtDesc(UUID userId);
+
+    void deleteByPetId(UUID petId);
 }

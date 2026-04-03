@@ -23,8 +23,6 @@ import pawtner_core.pawtner_care_api.auth.service.AuthTokenService;
 @Component
 public class BearerTokenAuthFilter extends OncePerRequestFilter {
 
-    private static final String BEARER_PREFIX = "Bearer ";
-
     private final AuthTokenService authTokenService;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
@@ -50,13 +48,14 @@ public class BearerTokenAuthFilter extends OncePerRequestFilter {
         FilterChain filterChain
     ) throws ServletException, IOException {
         String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-
-        if (authorizationHeader == null || !authorizationHeader.startsWith(BEARER_PREFIX)) {
-            writeUnauthorizedResponse(response, "Missing or invalid Authorization header");
+        final String providedToken;
+        try {
+            providedToken = authTokenService.extractBearerToken(authorizationHeader);
+        } catch (IllegalArgumentException exception) {
+            writeUnauthorizedResponse(response, exception.getMessage());
             return;
         }
 
-        String providedToken = authorizationHeader.substring(BEARER_PREFIX.length()).trim();
         if (!authTokenService.isValid(providedToken)) {
             writeUnauthorizedResponse(response, "Invalid bearer token");
             return;

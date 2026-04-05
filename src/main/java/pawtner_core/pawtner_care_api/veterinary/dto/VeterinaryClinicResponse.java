@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import pawtner_core.pawtner_care_api.veterinary.enums.ClinicOpenDay;
 
 public record VeterinaryClinicResponse(
     UUID id,
@@ -19,6 +20,9 @@ public record VeterinaryClinicResponse(
     BigDecimal latitude,
     @JsonFormat(pattern = "HH:mm")
     LocalTime openingTime,
+    @JsonFormat(pattern = "HH:mm")
+    LocalTime closingTime,
+    List<ClinicOpenDay> openDays,
     List<String> contactNumbers,
     String ratings,
     LocalDateTime updatedDate,

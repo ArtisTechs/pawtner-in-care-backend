@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import pawtner_core.pawtner_care_api.veterinary.enums.ClinicOpenDay;
 
 public record VeterinaryClinicRequest(
     @NotBlank(message = "Name is required")
@@ -32,6 +33,11 @@ public record VeterinaryClinicRequest(
 
     @JsonFormat(pattern = "HH:mm")
     LocalTime openingTime,
+
+    @JsonFormat(pattern = "HH:mm")
+    LocalTime closingTime,
+
+    List<ClinicOpenDay> openDays,
 
     List<
         @Size(max = 50, message = "Each contact number must not exceed 50 characters")

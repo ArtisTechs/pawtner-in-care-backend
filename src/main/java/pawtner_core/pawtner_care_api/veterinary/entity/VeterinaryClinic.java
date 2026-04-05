@@ -14,6 +14,8 @@ import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -21,6 +23,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import pawtner_core.pawtner_care_api.veterinary.enums.ClinicOpenDay;
 
 @Entity
 @Table(name = "veterinary_clinics")
@@ -49,6 +52,18 @@ public class VeterinaryClinic {
 
     @Column(name = "opening_time")
     private LocalTime openingTime;
+
+    @Column(name = "closing_time")
+    private LocalTime closingTime;
+
+    @ElementCollection
+    @CollectionTable(
+        name = "veterinary_clinic_open_days",
+        joinColumns = @JoinColumn(name = "veterinary_clinic_id")
+    )
+    @Column(name = "open_day", length = 20)
+    @Enumerated(EnumType.STRING)
+    private List<ClinicOpenDay> openDays = new ArrayList<>();
 
     @ElementCollection
     @CollectionTable(
@@ -152,6 +167,22 @@ public class VeterinaryClinic {
 
     public void setOpeningTime(LocalTime openingTime) {
         this.openingTime = openingTime;
+    }
+
+    public LocalTime getClosingTime() {
+        return closingTime;
+    }
+
+    public void setClosingTime(LocalTime closingTime) {
+        this.closingTime = closingTime;
+    }
+
+    public List<ClinicOpenDay> getOpenDays() {
+        return openDays;
+    }
+
+    public void setOpenDays(List<ClinicOpenDay> openDays) {
+        this.openDays = openDays;
     }
 
     public List<String> getContactNumbers() {

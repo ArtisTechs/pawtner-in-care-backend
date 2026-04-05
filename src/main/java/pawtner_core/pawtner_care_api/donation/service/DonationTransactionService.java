@@ -1,6 +1,7 @@
 package pawtner_core.pawtner_care_api.donation.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -18,7 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import pawtner_core.pawtner_care_api.common.dto.PageResponse;
 import pawtner_core.pawtner_care_api.donation.dto.DonationTransactionRequest;
+import pawtner_core.pawtner_care_api.donation.dto.DonationTransactionCampaignSummaryResponse;
+import pawtner_core.pawtner_care_api.donation.dto.DonationTransactionPaymentModeSummaryResponse;
 import pawtner_core.pawtner_care_api.donation.dto.DonationTransactionResponse;
+import pawtner_core.pawtner_care_api.donation.dto.DonationTransactionUserSummaryResponse;
 import pawtner_core.pawtner_care_api.donation.entity.DonationCampaign;
 import pawtner_core.pawtner_care_api.donation.entity.DonationTransaction;
 import pawtner_core.pawtner_care_api.payment.entity.PaymentMode;
@@ -34,6 +38,8 @@ public class DonationTransactionService {
 
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
         "id",
+        "createdDate",
+        "updatedDate",
         "donatedAmount",
         "user.firstName",
         "user.lastName",
@@ -297,17 +303,68 @@ public class DonationTransactionService {
     private DonationTransactionResponse toResponse(DonationTransaction donationTransaction) {
         return new DonationTransactionResponse(
             donationTransaction.getId(),
-            donationTransaction.getUser().getId(),
-            buildUserFullName(donationTransaction.getUser()),
-            donationTransaction.getUser().getEmail(),
-            donationTransaction.getPaymentMode().getId(),
-            donationTransaction.getPaymentMode().getName(),
-            donationTransaction.getDonationCampaign().getId(),
-            donationTransaction.getDonationCampaign().getTitle(),
+            donationTransaction.getTransactionId(),
+            toUserSummary(donationTransaction.getUser()),
+            toPaymentModeSummary(donationTransaction.getPaymentMode()),
+            toCampaignSummary(donationTransaction.getDonationCampaign()),
             donationTransaction.getPhotoProof(),
             donationTransaction.getDonatedAmount(),
-            donationTransaction.getMessage()
+            donationTransaction.getMessage(),
+            donationTransaction.getCreatedDate(),
+            donationTransaction.getUpdatedDate()
         );
+    }
+
+    private DonationTransactionUserSummaryResponse toUserSummary(User user) {
+        return new DonationTransactionUserSummaryResponse(
+            user.getId(),
+            user.getFirstName(),
+            user.getMiddleName(),
+            user.getLastName(),
+            buildUserFullName(user),
+            user.getEmail(),
+            user.getProfilePicture(),
+            user.getRole(),
+            user.getActive(),
+            user.getCreatedDate(),
+            user.getUpdatedDate()
+        );
+    }
+
+    private DonationTransactionPaymentModeSummaryResponse toPaymentModeSummary(PaymentMode paymentMode) {
+        return new DonationTransactionPaymentModeSummaryResponse(
+            paymentMode.getId(),
+            paymentMode.getName(),
+            paymentMode.getAccountNumber(),
+            paymentMode.getPhotoQr(),
+            paymentMode.getCreatedDate()
+        );
+    }
+
+    private DonationTransactionCampaignSummaryResponse toCampaignSummary(DonationCampaign donationCampaign) {
+        return new DonationTransactionCampaignSummaryResponse(
+            donationCampaign.getId(),
+            donationCampaign.getTitle(),
+            donationCampaign.getDescription(),
+            donationCampaign.getTotalCost(),
+            getTotalDonatedCost(donationCampaign.getId()),
+            donationCampaign.getDeadline(),
+            donationCampaign.getStartDate(),
+            donationCampaign.getUpdatedDate(),
+            donationCampaign.getPhoto(),
+            donationCampaign.getIsUrgent(),
+            donationCampaign.getStatus(),
+            donationCampaign.getType()
+        );
+    }
+
+    private BigDecimal getTotalDonatedCost(UUID donationCampaignId) {
+        BigDecimal totalDonatedCost = donationTransactionRepository.sumDonatedAmountByDonationCampaignId(donationCampaignId);
+        if (totalDonatedCost == null) {
+            return BigDecimal.ZERO.setScale(2, RoundingMode.UNNECESSARY);
+        }
+
+        return totalDonatedCost;
     }
 
     private String buildUserFullName(User user) {

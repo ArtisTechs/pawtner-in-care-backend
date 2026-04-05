@@ -19,6 +19,7 @@ import pawtner_core.pawtner_care_api.veterinary.dto.VeterinaryClinicRequest;
 import pawtner_core.pawtner_care_api.veterinary.dto.VeterinaryClinicResponse;
 import pawtner_core.pawtner_care_api.veterinary.entity.VeterinaryClinic;
 import pawtner_core.pawtner_care_api.exception.ResourceNotFoundException;
+import pawtner_core.pawtner_care_api.veterinary.enums.ClinicOpenDay;
 import pawtner_core.pawtner_care_api.veterinary.repository.VeterinaryClinicRepository;
 
 @Service
@@ -31,6 +32,7 @@ public class VeterinaryClinicService {
         "longitude",
         "latitude",
         "openingTime",
+        "closingTime",
         "ratings",
         "createdDate",
         "updatedDate"
@@ -142,11 +144,32 @@ public class VeterinaryClinicService {
         veterinaryClinic.setLongitude(request.longitude());
         veterinaryClinic.setLatitude(request.latitude());
         veterinaryClinic.setOpeningTime(request.openingTime());
+        veterinaryClinic.setClosingTime(request.closingTime());
+        validateOperatingHours(veterinaryClinic.getOpeningTime(), veterinaryClinic.getClosingTime());
+        veterinaryClinic.setOpenDays(normalizeOpenDays(request.openDays()));
         veterinaryClinic.setContactNumbers(normalizeStringList(request.contactNumbers()));
         veterinaryClinic.setRatings(normalizeOptionalText(request.ratings()));
         veterinaryClinic.setPhotos(normalizeStringList(request.photos()));
         veterinaryClinic.setLogo(normalizeOptionalText(request.logo()));
         veterinaryClinic.setVideos(normalizeStringList(request.videos()));
+    }
+
+    private void validateOperatingHours(java.time.LocalTime openingTime, java.time.LocalTime closingTime) {
+        if (openingTime != null && closingTime != null && !closingTime.isAfter(openingTime)) {
+            throw new IllegalArgumentException("Closing time must be later than opening time");
+        }
+    }
+
+    private List<ClinicOpenDay> normalizeOpenDays(List<ClinicOpenDay> openDays) {
+        if (openDays == null) {
+            return new java.util.ArrayList<>();
+        }
+
+        return new java.util.ArrayList<>(openDays.stream()
+            .filter(java.util.Objects::nonNull)
+            .distinct()
+            .sorted(java.util.Comparator.comparingInt(Enum::ordinal))
+            .toList());
     }
 
     private List<String> normalizeStringList(List<String> values) {
@@ -226,6 +249,8 @@ public class VeterinaryClinicService {
             veterinaryClinic.getLongitude(),
             veterinaryClinic.getLatitude(),
             veterinaryClinic.getOpeningTime(),
+            veterinaryClinic.getClosingTime(),
+            List.copyOf(veterinaryClinic.getOpenDays()),
             List.copyOf(veterinaryClinic.getContactNumbers()),
             veterinaryClinic.getRatings(),
             veterinaryClinic.getUpdatedDate(),

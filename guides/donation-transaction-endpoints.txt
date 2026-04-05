@@ -25,6 +25,8 @@ Sample body:
 
 Notes:
 - ID is auto-generated as UUID
+- transactionId is auto-generated and separate from the UUID id
+- createdDate and updatedDate are auto-generated
 - userId must reference an existing user
 - paymentModeId must reference an existing payment mode
 - donationCampaignId must reference an existing donation campaign
@@ -38,6 +40,51 @@ GET /{id}
 
 Sample:
 GET /550e8400-e29b-41d4-a716-446655440000
+
+Sample response:
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "transactionId": "DON-20260405221530-4821",
+  "user": {
+    "id": "550e8400-e29b-41d4-a716-446655440010",
+    "firstName": "Juan",
+    "middleName": "Dela",
+    "lastName": "Cruz",
+    "fullName": "Juan Dela Cruz",
+    "email": "juan@example.com",
+    "profilePicture": "https://example.com/users/juan.png",
+    "role": "USER",
+    "active": true,
+    "createdDate": "2026-04-05T21:00:00",
+    "updatedDate": "2026-04-05T21:00:00"
+  },
+  "paymentMode": {
+    "id": "550e8400-e29b-41d4-a716-446655440001",
+    "name": "GCash",
+    "accountNumber": "09171234567",
+    "photoQr": "https://example.com/qr/gcash.png",
+    "createdDate": "2026-04-05T21:00:00"
+  },
+  "donationCampaign": {
+    "id": "550e8400-e29b-41d4-a716-446655440002",
+    "title": "Help Rescue Dogs",
+    "description": "Fund for rescue and treatment",
+    "totalCost": 50000.00,
+    "totalDonatedCost": 12500.00,
+    "deadline": "2026-05-01",
+    "startDate": "2026-04-01",
+    "updatedDate": "2026-04-05T21:00:00",
+    "photo": "https://example.com/campaigns/rescue-dogs.png",
+    "isUrgent": true,
+    "status": "ACTIVE",
+    "type": "MONETARY"
+  },
+  "photoProof": "https://example.com/proofs/donation-proof.png",
+  "donatedAmount": 1500.00,
+  "message": "Hope this helps.",
+  "createdDate": "2026-04-05T21:00:00",
+  "updatedDate": "2026-04-05T21:00:00"
+}
 
 4. Update Donation Transaction
 PUT /{id}

@@ -21,6 +21,14 @@ Sample body:
   "long": 121.0437000,
   "latitude": 14.6760000,
   "openingTime": "08:30",
+  "closingTime": "17:30",
+  "openDays": [
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday"
+  ],
   "contactNumbers": [
     "+639171234567",
     "+63281234567"
@@ -41,7 +49,8 @@ Notes:
 - createdDate is auto-generated on create
 - updatedDate is auto-generated on create and update
 - Required fields: name, locationAddress, long, latitude
-- openingTime is optional and uses HH:mm format
+- openingTime and closingTime are optional and use HH:mm format
+- openDays accepts lowercase day names like monday, tuesday, wednesday
 - contactNumbers, photos, and videos accept multiple string values
 
 2. Get Veterinary Clinic List
@@ -73,6 +82,15 @@ Sample body:
   "long": 121.0437000,
   "latitude": 14.6760000,
   "openingTime": "09:00",
+  "closingTime": "18:00",
+  "openDays": [
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday"
+  ],
   "contactNumbers": [
     "+639171234567",
     "+63281234567"
